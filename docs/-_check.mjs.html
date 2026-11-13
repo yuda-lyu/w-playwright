@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>_check.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#WPlaywright">WPlaywright</a></li><li><a href="global.html#_resetWarned">_resetWarned</a></li><li><a href="global.html#browserKindOf">browserKindOf</a></li><li><a href="global.html#callFunLog">callFunLog</a></li><li><a href="global.html#callReal">callReal</a></li><li><a href="global.html#callTrace">callTrace</a></li><li><a href="global.html#checkEnv">checkEnv</a></li><li><a href="global.html#checkLogonGuard">checkLogonGuard</a></li><li><a href="global.html#cloneOpt">cloneOpt</a></li><li><a href="global.html#dedupe">dedupe</a></li><li><a href="global.html#deepFreeze">deepFreeze</a></li><li><a href="global.html#ensureChromium">ensureChromium</a></li><li><a href="global.html#ensureChromiumCore">ensureChromiumCore</a></li><li><a href="global.html#errMsg">errMsg</a></li><li><a href="global.html#fallbackOptions">fallbackOptions</a></li><li><a href="global.html#featureName">featureName</a></li><li><a href="global.html#finalGate">finalGate</a></li><li><a href="global.html#findChromeCore">findChromeCore</a></li><li><a href="global.html#findSystemChrome">findSystemChrome</a></li><li><a href="global.html#getChromiumLaunchOptions">getChromiumLaunchOptions</a></li><li><a href="global.html#getCscriptPath">getCscriptPath</a></li><li><a href="global.html#getDefaultEnableFeatures">getDefaultEnableFeatures</a></li><li><a href="global.html#getEnvLikePw">getEnvLikePw</a></li><li><a href="global.html#getInstallArgs">getInstallArgs</a></li><li><a href="global.html#getInstallEnv">getInstallEnv</a></li><li><a href="global.html#getKey">getKey</a></li><li><a href="global.html#getManagedShellPath">getManagedShellPath</a></li><li><a href="global.html#getOverride">getOverride</a></li><li><a href="global.html#getPlaywrightInfo">getPlaywrightInfo</a></li><li><a href="global.html#getPrefixes">getPrefixes</a></li><li><a href="global.html#getPwDebugMode">getPwDebugMode</a></li><li><a href="global.html#getPwRegistryDirectory">getPwRegistryDirectory</a></li><li><a href="global.html#getWsfPath">getWsfPath</a></li><li><a href="global.html#isB1">isB1</a></li><li><a href="global.html#isF1">isF1</a></li><li><a href="global.html#isFeatureSwitch">isFeatureSwitch</a></li><li><a href="global.html#isFile">isFile</a></li><li><a href="global.html#isInspectorValue">isInspectorValue</a></li><li><a href="global.html#isLocalAccount">isLocalAccount</a></li><li><a href="global.html#isLogonGuardOn">isLogonGuardOn</a></li><li><a href="global.html#isManaged">isManaged</a></li><li><a href="global.html#isO1">isO1</a></li><li><a href="global.html#isOwnErr">isOwnErr</a></li><li><a href="global.html#isS1">isS1</a></li><li><a href="global.html#isS2">isS2</a></li><li><a href="global.html#isS3">isS3</a></li><li><a href="global.html#isTableMatch">isTableMatch</a></li><li><a href="global.html#isValidArg">isValidArg</a></li><li><a href="global.html#killTree">killTree</a></li><li><a href="global.html#launchChromium">launchChromium</a></li><li><a href="global.html#launchChromiumPersistent">launchChromiumPersistent</a></li><li><a href="global.html#launchWithInstall">launchWithInstall</a></li><li><a href="global.html#legacyOf">legacyOf</a></li><li><a href="global.html#makeErr">makeErr</a></li><li><a href="global.html#managedKind">managedKind</a></li><li><a href="global.html#mergeParsed">mergeParsed</a></li><li><a href="global.html#normPath">normPath</a></li><li><a href="global.html#optB1">optB1</a></li><li><a href="global.html#optS1">optS1</a></li><li><a href="global.html#optS3">optS3</a></li><li><a href="global.html#optTimer">optTimer</a></li><li><a href="global.html#parseCommon">parseCommon</a></li><li><a href="global.html#parseLaunchOpt">parseLaunchOpt</a></li><li><a href="global.html#parseOutput">parseOutput</a></li><li><a href="global.html#parseTimer">parseTimer</a></li><li><a href="global.html#prepare">prepare</a></li><li><a href="global.html#readArray">readArray</a></li><li><a href="global.html#readBadPasswordAttempts">readBadPasswordAttempts</a></li><li><a href="global.html#readVersionDir">readVersionDir</a></li><li><a href="global.html#runInstall">runInstall</a></li><li><a href="global.html#runLaunch">runLaunch</a></li><li><a href="global.html#runLaunchPersistent">runLaunchPersistent</a></li><li><a href="global.html#setBrowserTypeForTest">setBrowserTypeForTest</a></li><li><a href="global.html#snapshotOpt">snapshotOpt</a></li><li><a href="global.html#sortUnique">sortUnique</a></li><li><a href="global.html#splitItems">splitItems</a></li><li><a href="global.html#switchName">switchName</a></li><li><a href="global.html#toLaunchErr">toLaunchErr</a></li><li><a href="global.html#warn">warn</a></li><li><a href="global.html#warnInvalid">warnInvalid</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">_check.mjs</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//_check, 本套件之輸入檢測最小實作(不依wsemi; dspec輸入參數之檢測機制§7之例外), 種類之語意與處置依該規格(K1~K9、V4~V11、V19、V20)
+//另含: opt.debug之提示出口、onTrace與funLog之呼叫(同步、拋錯與rejection皆忽略)、帶code之固定詞彙錯誤
+
+
+//reNumStr, 數字字串(dspec §3.1): 去頭尾空白後之十進位寫法, 線性之正規式
+let reNumStr = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/
+
+//TIMER_MAX, 計時毫秒之上限(dspec §3.2 N2範圍子型)
+let TIMER_MAX = 2147483647
+
+//warned, 同函數同鍵同原因每行程只提示一次
+let warned = new Set()
+
+
+/**
+ * 判斷一般物件(O1): 原型為Object.prototype或null; 存取拋錯(已撤銷之Proxy)視為否
+ */
+function isO1(v) {
+    if (v === null || typeof v !== 'object') {
+        return false
+    }
+    try {
+        if (Array.isArray(v)) {
+            return false
+        }
+        let p = Object.getPrototypeOf(v)
+        return p === Object.prototype || p === null
+    }
+    catch (err) {
+        return false
+    }
+}
+
+
+/**
+ * 判斷布林(B1): 只收true、false
+ */
+function isB1(v) {
+    return v === true || v === false
+}
+
+
+/**
+ * 判斷非空字串(S1): 長度大於0之原始字串
+ */
+function isS1(v) {
+    return typeof v === 'string' &amp;&amp; v.length > 0
+}
+
+
+/**
+ * 判斷字串(S2): 原始字串(可空)
+ */
+function isS2(v) {
+    return typeof v === 'string'
+}
+
+
+/**
+ * 判斷列舉字串(S3)
+ */
+function isS3(v, list) {
+    return typeof v === 'string' &amp;&amp; list.indexOf(v) >= 0
+}
+
+
+/**
+ * 判斷函數(F1)
+ */
+function isF1(v) {
+    return typeof v === 'function'
+}
+
+
+/**
+ * 解析計時毫秒(N2範圍子型'timer'): 有限number或數字字串(轉值後使用, K4), 範圍0~2147483647; 回{ok, v}
+ */
+function parseTimer(v) {
+    let n = null
+    if (typeof v === 'number') {
+        n = v
+    }
+    else if (typeof v === 'string') {
+        let t = v.trim()
+        if (reNumStr.test(t)) {
+            n = Number(t)
+        }
+    }
+    if (n === null || !Number.isFinite(n) || n &lt; 0 || n > TIMER_MAX) {
+        return { ok: false, v: null }
+    }
+    return { ok: true, v: n }
+}
+
+
+//ARRAY_MAX, 陣列鍵(args、ignoreDefaultArgs)之元素數上限(有界; 超過或長度非安全整數即整鍵無效)
+let ARRAY_MAX = 10000
+
+
+/**
+ * 讀取陣列之元素(各讀一次), 讀取拋錯、長度非0~ARRAY_MAX之整數回null
+ */
+function readArray(v) {
+    try {
+        if (!Array.isArray(v)) {
+            return null
+        }
+        let n = v.length
+        if (!Number.isSafeInteger(n) || n &lt; 0 || n > ARRAY_MAX) {
+            return null
+        }
+        let r = []
+        for (let i = 0; i &lt; n; i++) {
+            r.push(v[i])
+        }
+        return r
+    }
+    catch (err) {
+        return null
+    }
+}
+
+
+/**
+ * 快照opt(V11): 每個自有可列舉字串鍵只讀一次, 讀取拋錯之鍵記為無效
+ *
+ * @param {*} opt 輸入opt
+ * @returns {Object} 回傳{ given, ok, keys }; given為是否有給(undefined、null視為未給), ok為opt本身是否為一般物件, keys為各鍵之{ ok, v }
+ */
+function snapshotOpt(opt) {
+    if (opt === undefined || opt === null) {
+        return { given: false, ok: true, keys: {} }
+    }
+    if (!isO1(opt)) {
+        return { given: true, ok: false, keys: {} }
+    }
+    let names = null
+    try {
+        names = Reflect.ownKeys(opt)
+    }
+    catch (err) {
+        return { given: true, ok: false, keys: {} }
+    }
+    let keys = {}
+    for (let k of names) {
+        if (typeof k !== 'string') {
+            continue
+        }
+        let enumerable = false
+        try {
+            let d = Object.getOwnPropertyDescriptor(opt, k)
+            enumerable = !!(d &amp;&amp; d.enumerable)
+        }
+        catch (err) {
+            keys[k] = { ok: false, v: undefined }
+            continue
+        }
+        if (!enumerable) {
+            continue
+        }
+        try {
+            keys[k] = { ok: true, v: opt[k] }
+        }
+        catch (err) {
+            keys[k] = { ok: false, v: undefined }
+        }
+    }
+    return { given: true, ok: true, keys }
+}
+
+
+/**
+ * 呼叫觀察回調(dspec計時器§2): 同步、不帶接收者、拋錯與rejection皆忽略、回傳值不用; 事件物件凍結
+ */
+function callTrace(onTrace, ev) {
+    if (typeof onTrace !== 'function') {
+        return
+    }
+    try {
+        let r = onTrace(Object.freeze(ev)) //區域變數之一般呼叫, 不帶接收者
+        if (r &amp;&amp; typeof r.then === 'function') {
+            r.then(null, () => {})
+        }
+    }
+    catch (err) {}
+}
+
+
+/**
+ * 呼叫呼叫端自給之funLog(label, safe, detail): 拋錯與rejection皆忽略
+ */
+function callFunLog(funLog, label, safe, detail) {
+    if (typeof funLog !== 'function') {
+        return
+    }
+    try {
+        let r = funLog(label, safe, detail)
+        if (r &amp;&amp; typeof r.then === 'function') {
+            r.then(null, () => {})
+        }
+    }
+    catch (err) {}
+}
+
+
+/**
+ * 提示(opt.debug為true時): 固定詞彙、不含傳入之值(K9、V20); 有funLog交funLog('warn', msg), 否則console.warn; 同函數同鍵同原因每行程一次
+ */
+function warn(st, fn, key, msg) {
+    if (!st || st.debug !== true) {
+        return
+    }
+    let id = `${fn}|${key}|${msg}`
+    if (warned.has(id)) {
+        return
+    }
+    warned.add(id)
+    let s = `[w-playwright ${fn}] ${msg}`
+    if (typeof st.funLog === 'function') {
+        callFunLog(st.funLog, 'warn', s, undefined)
+        return
+    }
+    try {
+        console.warn(s)
+    }
+    catch (err) {}
+}
+
+
+/**
+ * 提示無效之鍵改用預設(V19格式: invalid opt.&lt;鍵>: must be &lt;種類描述>, using default &lt;預設>)
+ */
+function warnInvalid(st, fn, key, desc, defDesc) {
+    warn(st, fn, key, `invalid ${key === '' ? 'opt' : 'opt.' + key}: must be ${desc}, using default ${defDesc}`)
+}
+
+
+/**
+ * 解析opt之共通鍵(debug、funLog、onTrace), 回傳狀態物件{ debug, funLog, onTrace, snap }
+ *
+ * @param {*} opt 輸入opt
+ * @param {String} fn 輸入函數名(提示用)
+ * @returns {Object} 回傳狀態物件
+ */
+function parseCommon(opt, fn) {
+    let snap = snapshotOpt(opt)
+    let st = { debug: false, funLog: null, onTrace: null, snap, fn }
+    let ks = snap.keys
+
+    //debug, B1, 非布林視為false(無法提示)
+    if (ks.debug &amp;&amp; ks.debug.ok &amp;&amp; isB1(ks.debug.v)) {
+        st.debug = ks.debug.v
+    }
+
+    //funLog, F1
+    if (ks.funLog) {
+        if (ks.funLog.ok &amp;&amp; isF1(ks.funLog.v)) {
+            st.funLog = ks.funLog.v
+        }
+        else if (ks.funLog.ok &amp;&amp; (ks.funLog.v === undefined || ks.funLog.v === null)) {
+            //未給
+        }
+        else {
+            warnInvalid(st, fn, 'funLog', 'a function', 'none')
+        }
+    }
+
+    //onTrace, F1
+    if (ks.onTrace) {
+        if (ks.onTrace.ok &amp;&amp; isF1(ks.onTrace.v)) {
+            st.onTrace = ks.onTrace.v
+        }
+        else if (ks.onTrace.ok &amp;&amp; (ks.onTrace.v === undefined || ks.onTrace.v === null)) {
+            //未給
+        }
+        else {
+            warnInvalid(st, fn, 'onTrace', 'a function', 'none')
+        }
+    }
+
+    //debug無效之提示(只在debug為true時可見, 故debug本身無效時無從提示)
+    if (ks.debug &amp;&amp; !(ks.debug.ok &amp;&amp; (isB1(ks.debug.v) || ks.debug.v === undefined || ks.debug.v === null))) {
+        warnInvalid(st, fn, 'debug', 'a boolean', 'false')
+    }
+
+    //opt本身無效
+    if (snap.given &amp;&amp; !snap.ok) {
+        warnInvalid(st, fn, '', 'a plain object', '{}')
+    }
+
+    return st
+}
+
+
+/**
+ * 取鍵值: 未給(undefined、null)回{ given:false }; 讀取拋錯回{ given:true, ok:false }; 否則{ given:true, ok:true, v }
+ */
+function getKey(st, key) {
+    let e = st.snap.keys[key]
+    if (!e) {
+        return { given: false }
+    }
+    if (!e.ok) {
+        return { given: true, ok: false }
+    }
+    if (e.v === undefined || e.v === null) {
+        return { given: false }
+    }
+    return { given: true, ok: true, v: e.v }
+}
+
+
+/**
+ * 解析B1之鍵: 無效改用預設並提示
+ */
+function optB1(st, key, def) {
+    let e = getKey(st, key)
+    if (!e.given) {
+        return def
+    }
+    if (e.ok &amp;&amp; isB1(e.v)) {
+        return e.v
+    }
+    warnInvalid(st, st.fn, key, 'a boolean', String(def))
+    return def
+}
+
+
+/**
+ * 解析S1之鍵: 無效視為未給並提示, 回undefined表未給
+ */
+function optS1(st, key) {
+    let e = getKey(st, key)
+    if (!e.given) {
+        return undefined
+    }
+    if (e.ok &amp;&amp; isS1(e.v)) {
+        return e.v
+    }
+    warnInvalid(st, st.fn, key, 'a non-empty string', 'none')
+    return undefined
+}
+
+
+/**
+ * 解析S3之鍵: 無效改用預設(def可為undefined表未給)並提示
+ */
+function optS3(st, key, list, def) {
+    let e = getKey(st, key)
+    if (!e.given) {
+        return def
+    }
+    if (e.ok &amp;&amp; isS3(e.v, list)) {
+        return e.v
+    }
+    let ls = list.map((v) => `'${v}'`).join(', ')
+    warnInvalid(st, st.fn, key, `one of ${ls}`, def === undefined ? 'none' : `'${def}'`)
+    return def
+}
+
+
+/**
+ * 解析N2範圍子型'timer'之鍵: 無效改用預設並提示
+ */
+function optTimer(st, key, def) {
+    let e = getKey(st, key)
+    if (!e.given) {
+        return def
+    }
+    if (e.ok) {
+        let r = parseTimer(e.v)
+        if (r.ok) {
+            return r.v
+        }
+    }
+    warnInvalid(st, st.fn, key, 'a valid number from 0 to 2147483647', String(def))
+    return def
+}
+
+
+/**
+ * 產生帶code之固定詞彙錯誤(不附外部原錯誤, dspec診斷輸出與遮罩D1例外、D3)
+ */
+function makeErr(code, msg) {
+    let e = new Error(msg)
+    e.code = code
+    ownErrs.add(e)
+    return e
+}
+
+//ownErrs, 本套件產生之錯誤(已正規化; 外層不得再包裝)
+let ownErrs = new WeakSet()
+
+
+/**
+ * 是否為本套件產生之錯誤
+ */
+function isOwnErr(e) {
+    try {
+        return e !== null &amp;&amp; typeof e === 'object' &amp;&amp; ownErrs.has(e)
+    }
+    catch (err) {
+        return false
+    }
+}
+
+
+/**
+ * 測試用: 清除提示之去重紀錄(內部)
+ */
+function _resetWarned() {
+    warned.clear()
+}
+
+
+export {
+    reNumStr,
+    TIMER_MAX,
+    isO1,
+    isB1,
+    isS1,
+    isS2,
+    isS3,
+    isF1,
+    parseTimer,
+    readArray,
+    snapshotOpt,
+    callTrace,
+    callFunLog,
+    warn,
+    warnInvalid,
+    parseCommon,
+    getKey,
+    optB1,
+    optS1,
+    optS3,
+    optTimer,
+    makeErr,
+    isOwnErr,
+    ARRAY_MAX,
+    _resetWarned
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Fri Nov 13 2026 13:44:44 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

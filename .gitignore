@@ -1,0 +1,12 @@
+node_modules
+test/_tmp
+.agents
+CLAUDE*.md
+AGENTS*.md
+.env
+.opencode
+.claude
+tmp
+test-action
+test-screenshot
+test-html

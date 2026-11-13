@@ -1,0 +1,29 @@
+{
+  "name": "w-playwright",
+  "version": "1.0.1",
+  "main": "dist/w-playwright.umd.js",
+  "dependencies": {
+    "playwright-core": "1.64.1"
+  },
+  "devDependencies": {
+    "w-package-tools": "^1.1.28"
+  },
+  "scripts": {
+    "test": "mocha --parallel \"test/*.test.mjs\" --timeout 180000",
+    "deploy": "gh-pages -d docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuda-lyu/w-playwright.git"
+  },
+  "keywords": [
+    "package",
+    "tool",
+    "playwright",
+    "chromium",
+    "browser",
+    "nodejs"
+  ],
+  "author": "yuda-lyu(semisphere)",
+  "license": "MIT"
+}
