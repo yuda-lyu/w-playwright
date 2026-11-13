@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>_pw.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#WPlaywright">WPlaywright</a></li><li><a href="global.html#_resetWarned">_resetWarned</a></li><li><a href="global.html#browserKindOf">browserKindOf</a></li><li><a href="global.html#callFunLog">callFunLog</a></li><li><a href="global.html#callReal">callReal</a></li><li><a href="global.html#callTrace">callTrace</a></li><li><a href="global.html#checkEnv">checkEnv</a></li><li><a href="global.html#checkLogonGuard">checkLogonGuard</a></li><li><a href="global.html#cloneOpt">cloneOpt</a></li><li><a href="global.html#dedupe">dedupe</a></li><li><a href="global.html#deepFreeze">deepFreeze</a></li><li><a href="global.html#ensureChromium">ensureChromium</a></li><li><a href="global.html#ensureChromiumCore">ensureChromiumCore</a></li><li><a href="global.html#errMsg">errMsg</a></li><li><a href="global.html#fallbackOptions">fallbackOptions</a></li><li><a href="global.html#featureName">featureName</a></li><li><a href="global.html#finalGate">finalGate</a></li><li><a href="global.html#findChromeCore">findChromeCore</a></li><li><a href="global.html#findSystemChrome">findSystemChrome</a></li><li><a href="global.html#getChromiumLaunchOptions">getChromiumLaunchOptions</a></li><li><a href="global.html#getCscriptPath">getCscriptPath</a></li><li><a href="global.html#getDefaultEnableFeatures">getDefaultEnableFeatures</a></li><li><a href="global.html#getEnvLikePw">getEnvLikePw</a></li><li><a href="global.html#getInstallArgs">getInstallArgs</a></li><li><a href="global.html#getInstallEnv">getInstallEnv</a></li><li><a href="global.html#getKey">getKey</a></li><li><a href="global.html#getManagedShellPath">getManagedShellPath</a></li><li><a href="global.html#getOverride">getOverride</a></li><li><a href="global.html#getPlaywrightInfo">getPlaywrightInfo</a></li><li><a href="global.html#getPrefixes">getPrefixes</a></li><li><a href="global.html#getPwDebugMode">getPwDebugMode</a></li><li><a href="global.html#getPwRegistryDirectory">getPwRegistryDirectory</a></li><li><a href="global.html#getWsfPath">getWsfPath</a></li><li><a href="global.html#isB1">isB1</a></li><li><a href="global.html#isF1">isF1</a></li><li><a href="global.html#isFeatureSwitch">isFeatureSwitch</a></li><li><a href="global.html#isFile">isFile</a></li><li><a href="global.html#isInspectorValue">isInspectorValue</a></li><li><a href="global.html#isLocalAccount">isLocalAccount</a></li><li><a href="global.html#isLogonGuardOn">isLogonGuardOn</a></li><li><a href="global.html#isManaged">isManaged</a></li><li><a href="global.html#isO1">isO1</a></li><li><a href="global.html#isOwnErr">isOwnErr</a></li><li><a href="global.html#isS1">isS1</a></li><li><a href="global.html#isS2">isS2</a></li><li><a href="global.html#isS3">isS3</a></li><li><a href="global.html#isTableMatch">isTableMatch</a></li><li><a href="global.html#isValidArg">isValidArg</a></li><li><a href="global.html#killTree">killTree</a></li><li><a href="global.html#launchChromium">launchChromium</a></li><li><a href="global.html#launchChromiumPersistent">launchChromiumPersistent</a></li><li><a href="global.html#launchWithInstall">launchWithInstall</a></li><li><a href="global.html#legacyOf">legacyOf</a></li><li><a href="global.html#makeErr">makeErr</a></li><li><a href="global.html#managedKind">managedKind</a></li><li><a href="global.html#mergeParsed">mergeParsed</a></li><li><a href="global.html#normPath">normPath</a></li><li><a href="global.html#optB1">optB1</a></li><li><a href="global.html#optS1">optS1</a></li><li><a href="global.html#optS3">optS3</a></li><li><a href="global.html#optTimer">optTimer</a></li><li><a href="global.html#parseCommon">parseCommon</a></li><li><a href="global.html#parseLaunchOpt">parseLaunchOpt</a></li><li><a href="global.html#parseOutput">parseOutput</a></li><li><a href="global.html#parseTimer">parseTimer</a></li><li><a href="global.html#prepare">prepare</a></li><li><a href="global.html#readArray">readArray</a></li><li><a href="global.html#readBadPasswordAttempts">readBadPasswordAttempts</a></li><li><a href="global.html#readVersionDir">readVersionDir</a></li><li><a href="global.html#runInstall">runInstall</a></li><li><a href="global.html#runLaunch">runLaunch</a></li><li><a href="global.html#runLaunchPersistent">runLaunchPersistent</a></li><li><a href="global.html#setBrowserTypeForTest">setBrowserTypeForTest</a></li><li><a href="global.html#snapshotOpt">snapshotOpt</a></li><li><a href="global.html#sortUnique">sortUnique</a></li><li><a href="global.html#splitItems">splitItems</a></li><li><a href="global.html#switchName">switchName</a></li><li><a href="global.html#toLaunchErr">toLaunchErr</a></li><li><a href="global.html#warn">warn</a></li><li><a href="global.html#warnInvalid">warnInvalid</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">_pw.mjs</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import path from 'path'
+import { createRequire } from 'module'
+import { chromium } from 'playwright-core'
+import core from 'playwright-core/lib/coreBundle'
+import pwDefaults from './pwDefaults.mjs'
+
+
+//_pw, 本套件與playwright-core之唯一接點(內部): BrowserType、實裝版本、套件位置、Playwright之debugMode與瀏覽器目錄
+//須先import 'playwright-core'(其index.js先載入lib/bootstrap)再取lib/coreBundle, 兩者為同一份模組實例(CJS快取)
+
+
+let require = createRequire(import.meta.url)
+
+//fpCorePkg, 本套件所依之playwright-core之package.json(與上方import同一份)
+let fpCorePkg = require.resolve('playwright-core/package.json')
+
+//pwState, 執行期狀態(內部; 測試以改寫coreVersion模擬版本不符, 測後還原)
+let pwState = {
+    coreVersion: String(require(fpCorePkg).version),
+}
+
+//coreRoot, playwright-core之套件根; cliPath為其CLI(package.json之bin)
+let coreRoot = path.dirname(fpCorePkg)
+let cliPath = path.join(coreRoot, 'cli.js')
+
+
+/**
+ * 依Playwright之getFromENV語意讀環境變數: 依序PWDEBUG、npm_config_pwdebug、npm_package_config_pwdebug
+ */
+function getEnvLikePw(name, env = process.env) {
+    let v = env[name]
+    if (v === undefined) {
+        v = env[`npm_config_${name.toLowerCase()}`]
+    }
+    if (v === undefined) {
+        v = env[`npm_package_config_${name.toLowerCase()}`]
+    }
+    return v
+}
+
+
+/**
+ * 依Playwright之debugMode語意判斷PWDEBUG之值是否為inspector模式: 'console'、'0'、'false'、未給、空字串以外皆是
+ */
+function isInspectorValue(v) {
+    if (v === undefined || v === null || v === '') {
+        return false
+    }
+    v = String(v)
+    if (v === 'console' || v === '0' || v === 'false') {
+        return false
+    }
+    return true
+}
+
+//pwdebugAtLoad, 本模組載入時之PWDEBUG(Playwright亦於模組初始化時快取)
+let pwdebugAtLoad = getEnvLikePw('PWDEBUG')
+
+
+/**
+ * Playwright實際採用之debugMode(其模組初始化時快取之值), 取不到時回''
+ */
+function getPwDebugMode() {
+    try {
+        return String(core.utils.debugMode())
+    }
+    catch (err) {
+        return ''
+    }
+}
+
+
+/**
+ * Playwright實際採用之瀏覽器目錄(registryDirectory, 其模組初始化時依PLAYWRIGHT_BROWSERS_PATH決定之絕對路徑), 取不到時回''
+ */
+function getPwRegistryDirectory() {
+    try {
+        return String(core.registry.registryDirectory || '')
+    }
+    catch (err) {
+        return ''
+    }
+}
+
+//registryDirectoryAtLoad, 本模組載入時Playwright之瀏覽器目錄快照(安裝子行程以此傳入PLAYWRIGHT_BROWSERS_PATH, F22)
+let registryDirectoryAtLoad = getPwRegistryDirectory()
+
+
+/**
+ * Playwright受管之headless shell執行檔路徑(無頭且未給通道時Playwright所用者; 不判存在), 取不到時回''
+ */
+function getManagedShellPath() {
+    try {
+        let e = core.registry.registry.findExecutable('chromium-headless-shell')
+        return e ? String(e.executablePath() || '') : ''
+    }
+    catch (err) {
+        return ''
+    }
+}
+
+
+/**
+ * 實裝playwright-core之版本是否等於內附表之版本
+ */
+function isTableMatch() {
+    return pwState.coreVersion === pwDefaults.version
+}
+
+
+export {
+    chromium,
+    pwState,
+    coreRoot,
+    cliPath,
+    getEnvLikePw,
+    isInspectorValue,
+    pwdebugAtLoad,
+    getPwDebugMode,
+    getPwRegistryDirectory,
+    registryDirectoryAtLoad,
+    getManagedShellPath,
+    isTableMatch
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Fri Nov 13 2026 13:44:44 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
