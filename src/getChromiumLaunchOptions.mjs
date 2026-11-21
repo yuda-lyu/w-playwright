@@ -139,10 +139,14 @@ function sortUnique(arr) {
 
 
 /**
- * 依呼叫時之環境變數取得Playwright預設之enable項目(Playwright於每次啟動時讀取)
+ * 依呼叫時之環境變數取得Playwright預設之enable項目(Playwright於每次啟動時讀取):
+ * 環境變數為真值時只省略內附表enableLegacyOmit之項, 餘項仍給(1.65.1起; 1.64.1僅一項故整串消失)
  */
 function getDefaultEnableFeatures(env = process.env, tb = pwDefaults) {
-    return env[tb.enableLegacyEnv] ? [] : [...tb.enableFeatures]
+    if (env[tb.enableLegacyEnv]) {
+        return tb.enableFeatures.filter((v) => tb.enableLegacyOmit.indexOf(v) < 0)
+    }
+    return [...tb.enableFeatures]
 }
 
 

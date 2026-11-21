@@ -1,6 +1,6 @@
 import assert from 'assert'
 import wpw from '../src/WPlaywright.mjs'
-import { defDisStr, findSwitches } from './tools/cmdline.mjs'
+import { defDisStr, defEnStr, findSwitches } from './tools/cmdline.mjs'
 import pwDefaults from '../src/pwDefaults.mjs'
 import { pwState } from '../src/_pw.mjs'
 import { cloneOpt, getOverride } from '../src/_launchCore.mjs'
@@ -140,7 +140,7 @@ describe('unit-setBrowserTypeForTest', function() {
     it('§2.3: 受管瀏覽器缺檔且未autoInstall → E_BROWSER_MISSING(附ensureChromium提示, 不含路徑)', async function() {
         let restore = wpw.setBrowserTypeForTest({
             launch: async () => {
-                throw new Error('Executable doesn\'t exist at C:\\Users\\x\\ms-playwright\\chromium_headless_shell-1248\\chrome-headless-shell.exe')
+                throw new Error('Executable doesn\'t exist at C:\\Users\\x\\ms-playwright\\chromium_headless_shell-1255\\chrome-headless-shell.exe')
             },
         })
         try {
@@ -346,9 +346,10 @@ describe('unit-setBrowserTypeForTest', function() {
                 process.env.PLAYWRIGHT_LEGACY_SCREENSHOT = save
             }
         }
-        //legacy時Playwright不給預設enable: 合併結果只有呼叫端之Foo, 且不ignore預設enable串
-        assert.strict.deepStrictEqual(findSwitches(seen.args, 'enable-features'), ['--enable-features=Foo'])
-        assert.strict.deepStrictEqual(seen.ignoreDefaultArgs, [defDisStr()])
+        //legacy時Playwright之預設enable只省略enableLegacyOmit之項: 合併結果為預設餘項＋呼叫端之Foo(一串), 並ignore預設餘項串(依合併後之現值, 非回調前之值)
+        let defEnLegacy = defEnStr({ [pwDefaults.enableLegacyEnv]: '1' })
+        assert.strict.deepStrictEqual(findSwitches(seen.args, 'enable-features'), [defEnLegacy + ',Foo'])
+        assert.strict.deepStrictEqual(seen.ignoreDefaultArgs, [defDisStr(), defEnLegacy])
     })
 
     it('cloneOpt: 一般物件與陣列深複製(替身改寫巢狀值不影響next()之選項), 函數以參照保留', function() {

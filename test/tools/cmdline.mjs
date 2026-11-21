@@ -14,15 +14,16 @@ function defDisStr() {
 
 
 /**
- * 內附表之預設enable串(依環境變數PLAYWRIGHT_LEGACY_SCREENSHOT, 為空回'')
+ * 內附表之預設enable串(依環境變數PLAYWRIGHT_LEGACY_SCREENSHOT, 真值時Playwright只省略enableLegacyOmit之項; 無項目回'')
  */
 function defEnStr(env = process.env) {
-    return env[pwDefaults.enableLegacyEnv] ? '' : '--enable-features=' + pwDefaults.enableFeatures.join(',')
+    let list = env[pwDefaults.enableLegacyEnv] ? pwDefaults.enableFeatures.filter((v) => pwDefaults.enableLegacyOmit.indexOf(v) < 0) : [...pwDefaults.enableFeatures]
+    return list.length > 0 ? '--enable-features=' + list.join(',') : ''
 }
 
 
 /**
- * 模擬Playwright 1.64.1之組參數(chromiumSwitches之代表項＋預設disable/enable＋使用者args, 再以ignoreDefaultArgs精確過濾整串)
+ * 模擬Playwright 1.65.1之組參數(chromiumSwitches之代表項＋預設disable/enable＋使用者args, 再以ignoreDefaultArgs精確過濾整串)
  * 真實之命令列由api-pwDrift以headless shell實證, 此處只供單元測試斷言合併器之輸出
  */
 function simulatePwCmdline(out, env = process.env) {
@@ -31,7 +32,7 @@ function simulatePwCmdline(out, env = process.env) {
         '--disable-field-trial-config',
         '--disable-extensions',
         defDisStr(),
-        en, //Playwright於PLAYWRIGHT_LEGACY_SCREENSHOT時放''
+        en, //Playwright於PLAYWRIGHT_LEGACY_SCREENSHOT時只省略enableLegacyOmit之項; 無項目時放''
         '--allow-pre-commit-input',
         '--no-sandbox',
         ...out.args,

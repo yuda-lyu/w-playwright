@@ -15,6 +15,18 @@
 9. **Playwright 用戶端以 `{ ...this._playwright._defaultLaunchOptions, ...options }` 合併**(`coreBundle.js:64822`,Playwright Test 執行器會設此全域預設):本套件未輸出之鍵(如未給之 `channel`、`executablePath`)會被全域預設補上,使實際瀏覽器與本套件判定之種類不同;故輸出恆含此兩鍵(值 `undefined`).
 10. **onTrace 等同步回調可在合併後改環境變數**:Playwright 於啟動時才讀 `SELENIUM_REMOTE_URL`、`PLAYWRIGHT_LEGACY_SCREENSHOT`,故檢查須在一切回調之後、呼叫 BrowserType 之前同步再做一次.
 
+## 一之二、升至 playwright-core 1.65.1 之實測(2026-11-21,第 440 項)
+
+1. **release notes 不載啟動開關之變動,以 `api-pwDrift` 與讀 `coreBundle.js` 為準**:1.65.0／1.65.1 之說明未提 `chromiumSwitches`,實際 disable 18 → 16 項、enable 1 → 2 項(逐項見帳本 R-PW-TABLE 之變更紀錄).`AutoDeElevate` 自 disable 清單消失,改以 `--do-not-de-elevate` 開關(`coreBundle.js` 之 `chromiumSwitches` 尾端).
+2. **legacy 環境變數之語意隨表結構而變**:1.64.1 之 `PLAYWRIGHT_LEGACY_SCREENSHOT` 真值使唯一之 enable 項消失(整串省略);1.65.1 之 `enabledFeatures()` 為 `[legacy ? '' : 'CDPScreenshotNewSurface', 'SkipListAccountsWithoutGaiaCookies'].filter(Boolean)`,真值只去前者.只更新表而不改合併器時,legacy 下命令列出現兩串 `--enable-features`(Playwright 之餘項串＋呼叫端串),`api-pwDrift` 之隔離行程案實測轉紅(修前紅);修法為表增 `enableLegacyOmit`、`getDefaultEnableFeatures` 依之過濾.**表之鍵不只「清單」,還含「清單項是否隨環境變數省略」**.
+3. **單元測試以具體功能名當「Playwright 預設 disable 之例」者,表一動即失效**:`Translate` 於 1.65.1 已不在預設;改用 `MediaRouter` 並於測試內以斷言驗其仍在表內(前提不成立即明確失敗,不靜默空過).
+4. **持久啟動之 logger 於 1.65.1 仍只收 `api` 類紀錄**(2026-11-21 以 headless shell 實測),`<launching>` 之取法仍須 `DEBUG=pw:browser` 攔截 stderr.
+5. **registry 之 Chrome／Edge 路徑與通道全集於 1.65.1 不變**(`_createChromiumChannel` 之前綴順序、後綴;10 個通道),`_findChrome.mjs` 之路徑表無須改.下載函式 `downloadFile` 仍只比 Content-Length 之大小(chunked 時不比)、無雜湊.
+6. **1.64.1 下之守門實證(已被 1.65.1 下之結果取代,僅存史)**:Chrome 157.0.8103.78、Edge 157.0.4341.46、Chromium 156.0.8078.4(revision 1248),生效 disable 皆 19 項(＝18 項預設＋守門),增量皆 0.
+7. **新瀏覽器之佔用**(Windows,`%LOCALAPPDATA%\ms-playwright`):`chromium_headless_shell-1255` 約 288 MB、`chromium-1255` 約 453 MB;`--no-remove` 使 1243、1248、1254 仍在,不自動回收舊 revision.
+8. **需帶環境變數啟動 node 腳本時**:Git Bash 下 `cmd /c "set X=1&& node …"` 之 `/c` 會被 MSYS 轉成 `C:/` 而開出互動式 cmd 空轉(不會執行目標腳本、離開碼 0);改以一支 `.mjs` 於內部設 `process.env` 後 `await import()` 目標腳本.
+9. **`npm i <套件>@<版> --save-exact` 之副作用**:同時把 `package-lock.json` 之 `version` 對齊 `package.json`,並於 `package.json` 末尾補換行;皆非人為改版號.
+
 ## 二、測試與驗證
 
 1. **真瀏覽器之守門驗證**:讀 `chrome://version` 之「指令列變化版本」(`#variations-cmd-section` 內之 base64 JSON,為生效之覆寫);headless shell 無此頁(`net::ERR_INVALID_URL`),只能驗命令列.錯誤次數於啟動時即增加,關閉後以 1 秒間隔讀 8 次作否定斷言之觀察窗.

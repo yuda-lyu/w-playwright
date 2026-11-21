@@ -2,7 +2,7 @@ import path from 'path'
 import assert from 'assert'
 import pwDefaults from '../src/pwDefaults.mjs'
 import { runChild, cleanEnv } from './tools/runChild.mjs'
-import { findSwitches, effectiveFeatures, guardEffective } from './tools/cmdline.mjs'
+import { defEnStr, findSwitches, effectiveFeatures, guardEffective } from './tools/cmdline.mjs'
 
 
 //api-pwDrift: 漂移測試(設計§8.2)——以headless shell實際啟動之命令列比對內附表與合併結果(F1、F2、F3); 接線不用替身
@@ -47,14 +47,18 @@ describe('api-pwDrift', function() {
         assert.ok(r.defaultsCase.line.startsWith(r.shellExe), r.defaultsCase.line.slice(0, 120))
     })
 
-    it('PLAYWRIGHT_LEGACY_SCREENSHOT已設(隔離行程): 基準無enable; 合併後呼叫端enable單獨一串、disable恰一串', async function() {
+    it('PLAYWRIGHT_LEGACY_SCREENSHOT已設(隔離行程): 基準之enable只省略enableLegacyOmit之項(1.65.1起餘項仍給); 合併後enable仍恰一串(預設餘項＋呼叫端項)、disable恰一串', async function() {
         this.timeout(120000)
         let x = await runChild('./test/tools/pwDriftProbe.mjs', ['legacy'], cleanEnv({ PLAYWRIGHT_LEGACY_SCREENSHOT: '1' }), 110000)
         assert.ok(x.result, x.out)
         assert.strict.deepStrictEqual(x.result.ok, true, x.result.error)
-        assert.strict.deepStrictEqual(findSwitches(x.result.baseline, 'enable-features'), [])
+        //真命令列之預設enable＝內附表扣除enableLegacyOmit(R-PW-TABLE、R-PW-MERGE 07)
+        let defEn = defEnStr({ [pwDefaults.enableLegacyEnv]: '1' })
+        assert.ok(defEn.startsWith('--enable-features='), defEn)
+        assert.strict.deepStrictEqual(findSwitches(x.result.baseline, 'enable-features'), [defEn])
         assert.strict.deepStrictEqual(findSwitches(x.result.baseline, 'disable-features').length, 1)
-        assert.strict.deepStrictEqual(findSwitches(x.result.merged, 'enable-features'), ['--enable-features=WpwY'])
+        //合併: 預設餘項與呼叫端項併為單獨一串, 不得與Playwright預設之enable並存兩串
+        assert.strict.deepStrictEqual(findSwitches(x.result.merged, 'enable-features'), [defEn + ',WpwY'])
         assert.strict.deepStrictEqual(findSwitches(x.result.merged, 'disable-features'), [x.result.expectedDis])
     })
 

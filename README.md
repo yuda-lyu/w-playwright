@@ -23,7 +23,7 @@ To view documentation or get support, visit [docs](https://yuda-lyu.github.io/w-
 > - `ignoreAllDefaultArgs` 與 Playwright 內部之 `__testHook*` 鍵一律刪除;`channel`、`executablePath` 恆為輸出之鍵(未給時為 `undefined`,使 Playwright 之全域預設啟動選項無法蓋過);其餘鍵原樣轉傳給 Playwright。
 > - 實際呼叫 Playwright 之前(合併與一切回調之後)同步再檢一次環境;`PLAYWRIGHT_LEGACY_SCREENSHOT` 於合併後改變者依現值重新合併。
 
-> **版本**:`dependencies` 只有 `playwright-core` 精確 `1.64.1`;本套件內附該版之預設清單(`src/pwDefaults.mjs`),**實裝版本與內附表不同即拒絕啟動**(`E_PW_VERSION`;例如依賴樹以 overrides 換了版本)。升版只改本套件:改精確版本 → 本套件測試 `api-pwDrift` 轉紅並印出新清單 → 更新內附表 → 全套綠(含 `api-realChromeGuard` 實際通過)→ 發布。
+> **版本**:`dependencies` 只有 `playwright-core` 精確 `1.65.1`;本套件內附該版之預設清單(`src/pwDefaults.mjs`),**實裝版本與內附表不同即拒絕啟動**(`E_PW_VERSION`;例如依賴樹以 overrides 換了版本)。升版只改本套件:改精確版本 → 本套件測試 `api-pwDrift` 轉紅並印出新清單 → 更新內附表 → 全套綠(含 `api-realChromeGuard` 實際通過)→ 發布。
 
 ## Installation
 
@@ -32,12 +32,12 @@ To view documentation or get support, visit [docs](https://yuda-lyu.github.io/w-
 npm i w-playwright
 ```
 
-1. **安裝即帶入 playwright-core 1.64.1**(經本套件之 `dependencies`,精確版本)。使用端不需、也不應另裝 `playwright` 或 `playwright-core`。
+1. **安裝即帶入 playwright-core 1.65.1**(經本套件之 `dependencies`,精確版本)。使用端不需、也不應另裝 `playwright` 或 `playwright-core`。
 2. **受管瀏覽器之取得**(無頭預設用之 headless shell;有頭或 `channel: 'chromium'` 用之完整 Chromium):由本套件所依之 playwright-core 下載,請用 `await wpw.ensureChromium()`(headless shell)或 `await wpw.ensureChromium({ kind: 'chromium' })`(完整 Chromium);或啟動時給 `autoInstall: true`(缺檔時安裝一次再啟動)。**自動安裝預設關**:未安裝而啟動即 `E_BROWSER_MISSING`。**不要用 `npx playwright install`**(依賴樹中他版被提升時會下載到不同版本之瀏覽器)。
-   - 下載由 Playwright 自其 CDN(`cdn.playwright.dev`)取得;其完整性檢查為檔案大小(Content-Length)、解壓與標記檔,**無雜湊校驗**(1.64.1 `lib/coreBundle.js` 讀碼),與自有套件之〈外部執行檔〉規格不同(該規格對 Playwright 自管之瀏覽器加註例外)。
+   - 下載由 Playwright 自其 CDN(`cdn.playwright.dev`)取得;其完整性檢查為檔案大小(Content-Length)、解壓與標記檔,**無雜湊校驗**(1.65.1 `lib/coreBundle.js` 讀碼),與自有套件之〈外部執行檔〉規格不同(該規格對 Playwright 自管之瀏覽器加註例外)。
    - 安裝子行程以 `process.execPath` 執行本套件所依之 `playwright-core/cli.js install --no-remove …`,隱藏視窗;`--no-remove` 使本機其他 Playwright 版本之瀏覽器不被移除。
    - Linux 缺系統相依時:`ensureChromium({ installDeps: true })` 或啟動時 `installDeps: true`(執行 `install-deps chromium`,可能需 sudo;預設關)。
-3. **離線**:於可連網之機器以同版 w-playwright 執行 `ensureChromium()`(需要完整 Chromium 時另執行 `ensureChromium({ kind: 'chromium' })`),把 Playwright 之瀏覽器資料夾(Windows 預設 `%LOCALAPPDATA%\ms-playwright` 內之 `chromium_headless_shell-1248`、`chromium-1248` 等)複製至目標機,並以環境變數 `PLAYWRIGHT_BROWSERS_PATH` 指向該資料夾。**此變數須在載入本套件前設定**(Playwright 於模組載入時決定瀏覽器目錄;執行期改動不生效,本套件之安裝子行程亦沿用載入時之目錄)。
+3. **離線**:於可連網之機器以同版 w-playwright 執行 `ensureChromium()`(需要完整 Chromium 時另執行 `ensureChromium({ kind: 'chromium' })`),把 Playwright 之瀏覽器資料夾(Windows 預設 `%LOCALAPPDATA%\ms-playwright` 內之 `chromium_headless_shell-1255`、`chromium-1255` 等)複製至目標機,並以環境變數 `PLAYWRIGHT_BROWSERS_PATH` 指向該資料夾。**此變數須在載入本套件前設定**(Playwright 於模組載入時決定瀏覽器目錄;執行期改動不生效,本套件之安裝子行程亦沿用載入時之目錄)。
 4. **用真 Chrome(`channel: 'chrome'`)或 Edge(`channel: 'msedge'`)者,須自行安裝 Google Chrome／Microsoft Edge**;`wpw.findSystemChrome()`(或 `{ channel: 'msedge' }`)只以檔案存在判定其位置,不啟動、不代表可啟動。
 5. **守門參數**:本套件一律加入 `--disable-features=<Playwright 預設>,AutofillAiWalletPrivatePasses,<呼叫端自給>`,原因見〈Core〉。
 6. **不支援之環境變數**(會使守門失效,一律拒絕 `E_ENV`):`PWDEBUG` 為 inspector 模式之值(Playwright 會另起未合併參數之 Inspector 瀏覽器並強制有頭;`console`、`0`、`false` 不受限;亦讀 `npm_config_pwdebug`、`npm_package_config_pwdebug`,且 Playwright 於載入時快取,載入時有值、事後刪除仍拒絕)、`SELENIUM_REMOTE_URL`(改走不經 `ignoreDefaultArgs` 之 Selenium 路徑)。
@@ -111,14 +111,14 @@ console.log(wpw.getChromiumLaunchOptions({ args: ['--disable-features=Translate'
 
 ## 驗證狀態
 
-守門之生效以「經本套件參數啟動一次 → `chrome://version` 之『指令列變化版本』(生效之覆寫)之 disable 集合 ⊇ 內附表預設 ∪ 守門 → 錯誤密碼次數前後增量 0」驗證。已驗之組合(2026-11-13,Windows 11,無頭;**未列者不視為已證**):
+守門之生效以「經本套件參數啟動一次 → `chrome://version` 之『指令列變化版本』(生效之覆寫)之 disable 集合 ⊇ 內附表預設 ∪ 守門 → 錯誤密碼次數前後增量 0」驗證。已驗之組合(2026-11-21,Playwright 1.65.1,Windows 11,無頭;**未列者不視為已證**):
 
 | 瀏覽器 | 通道 | 版本 | 結果 |
 |---|---|---|---|
-| Google Chrome | `chrome` | 157.0.8103.78 | 生效之 disable ⊇ 預設∪守門、命令列恰一串;增量 0 |
-| Microsoft Edge | `msedge` | 157.0.4341.46 | 生效之 disable 19 項,與預設∪守門完全相同、命令列恰一串;增量 0 |
-| Chromium(Playwright 1.64.1 之 revision 1248) | `chromium` | 156.0.8078.4 | 同上(19 項完全相同);增量 0 |
-| Chrome Headless Shell(revision 1248) | 預設(無頭、未給通道) | 156.0.8078.4 | 本即不觸發;命令列由 `api-pwDrift` 驗證 |
+| Google Chrome | `chrome` | 157.0.8103.79 | 生效之 disable ⊇ 預設∪守門、命令列恰一串;增量 0 |
+| Microsoft Edge | `msedge` | 157.0.4341.60 | 生效之 disable 17 項,與預設∪守門完全相同、命令列恰一串;增量 0 |
+| Chromium(Playwright 1.65.1 之 revision 1255) | `chromium` | 159.0.8154.6 | 同上(17 項完全相同);增量 0 |
+| Chrome Headless Shell(revision 1255) | 預設(無頭、未給通道) | 159.0.8154.6 | 本即不觸發;命令列由 `api-pwDrift` 驗證 |
 
 未驗:有頭、`chrome-beta`／`dev`／`canary`、`msedge-beta`／`dev`／`canary`、`chrome-for-testing` 通道名(與 `chromium` 同執行檔)、持久設定檔之 `chrome://flags`(可能把實驗旗標併入同一串)、企業原則、其他作業系統。已驗版本不寫入程式(各機之瀏覽器版本不同、隨自動更新而變):Chrome／Edge 自動更新後,先跑本套件之 `api-realChromeGuard`(實際通過才算,略過不算;其輸出記錄所驗之版本)再跑會連續啟動該瀏覽器之測試。
 

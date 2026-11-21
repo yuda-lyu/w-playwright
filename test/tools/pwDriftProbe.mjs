@@ -17,7 +17,7 @@ let require = createRequire(import.meta.url)
 let SHELL_NAMES = ['chrome-headless-shell.exe', 'chrome-headless-shell']
 
 //launching, 收Playwright之<launching>紀錄(PW164 :10025): Playwright之debugLogger(DEBUG=pw:browser)寫至stderr, 於此攔截
-//(1.64.1之logger選項於持久啟動收不到此紀錄; CDP Browser.getBrowserCommandLine須--enable-automation, Playwright未給)
+//(1.64.1、1.65.1之logger選項於持久啟動只收到api類紀錄、收不到此紀錄〔1.65.1於2026-11-21實測〕; CDP Browser.getBrowserCommandLine須--enable-automation, Playwright未給)
 let launching = []
 let stderrWrite = process.stderr.write.bind(process.stderr)
 process.stderr.write = (chunk, ...rest) => {
@@ -199,7 +199,7 @@ async function main() {
     r.ok = true
 }
 
-//legacy: 子行程設PLAYWRIGHT_LEGACY_SCREENSHOT時, Playwright不給預設enable; 呼叫端enable單獨一串、disable恰一串
+//legacy: 子行程設PLAYWRIGHT_LEGACY_SCREENSHOT時, Playwright之預設enable省略enableLegacyOmit之項(餘項仍給); 呼叫端enable併入預設餘項而為單獨一串、disable恰一串
 async function legacy() {
     let shellExe = core.registry.registry.findExecutable('chromium-headless-shell').executablePath()
     assertShell(shellExe)

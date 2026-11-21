@@ -32,8 +32,8 @@ function listFiles(fd) {
 
 describe('unit-pkg', function() {
 
-    it('dependencies只有精確版之playwright-core(1.64.1), devDependencies只有w-package-tools', function() {
-        assert.strict.deepStrictEqual(pkg.dependencies, { 'playwright-core': '1.64.1' })
+    it('dependencies只有精確版之playwright-core(1.65.1), devDependencies只有w-package-tools', function() {
+        assert.strict.deepStrictEqual(pkg.dependencies, { 'playwright-core': '1.65.1' })
         assert.strict.deepStrictEqual(Object.keys(pkg.devDependencies), ['w-package-tools'])
         assert.strict.deepStrictEqual(pkg.dependencies['playwright-core'], pwDefaults.version)
     })

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 
-//_findChrome, 以檔案存在判定系統Chrome/Edge(內部; 路徑表同playwright-core 1.64.1之registry: 後綴chrome/msedge通道、Windows前綴LOCALAPPDATA、PROGRAMFILES、PROGRAMFILES(X86)、HOMEDRIVE之Program Files兩處)
+//_findChrome, 以檔案存在判定系統Chrome/Edge(內部; 路徑表同playwright-core 1.65.1之registry: 後綴chrome/msedge通道、Windows前綴LOCALAPPDATA、PROGRAMFILES、PROGRAMFILES(X86)、HOMEDRIVE之Program Files兩處)
 //只判存在, 不啟動瀏覽器, 不代表可啟動(Linux無DISPLAY、權限、相依不在判斷內)
 
 

@@ -105,14 +105,14 @@ describe('unit-mergeFeatures', function() {
             let out = g({ args: ['--enable-features=Foo,' + it] })
             let en = findSwitches(out.args, 'enable-features')
             //§3.1第6步: 剔除功能名屬守門者
-            assert.strict.deepStrictEqual(en, ['--enable-features=CDPScreenshotNewSurface,Foo'], it)
+            assert.strict.deepStrictEqual(en, ['--enable-features=' + [...pwDefaults.enableFeatures, 'Foo'].join(',')], it)
             assertOneGuardedDisable(out)
         }
     })
 
     it('原則3: enable與呼叫端disable同名者剔除(衝突收嚴)', function() {
         let out = g({ args: ['--disable-features=Foo', '--enable-features=Foo:p/1,Bar'] })
-        assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=CDPScreenshotNewSurface,Bar'])
+        assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=' + [...pwDefaults.enableFeatures, 'Bar'].join(',')])
         assertOneGuardedDisable(out)
     })
 
@@ -175,22 +175,51 @@ describe('unit-mergeFeatures', function() {
 
     it('PLAYWRIGHT_LEGACY_SCREENSHOT未設: 呼叫端enable併入預設enable並忽略預設enable串', function() {
         let out = g({ args: ['--enable-features=Foo'] })
-        assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=CDPScreenshotNewSurface,Foo'])
+        assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=' + [...pwDefaults.enableFeatures, 'Foo'].join(',')])
         assert.strict.deepStrictEqual(out.ignoreDefaultArgs, [defDisStr(), defEnStr()])
         let cmd = simulatePwCmdline(out)
         assert.strict.deepStrictEqual(findSwitches(cmd, 'enable-features').length, 1)
     })
 
-    it('PLAYWRIGHT_LEGACY_SCREENSHOT已設: 無預設enable, 呼叫端enable單獨一串、不忽略預設enable', function() {
+    it('PLAYWRIGHT_LEGACY_SCREENSHOT已設: 預設enable只省略enableLegacyOmit之項(餘項仍給), 呼叫端enable併入餘項為恰一串、忽略預設餘項串', function() {
         process.env.PLAYWRIGHT_LEGACY_SCREENSHOT = '1'
         try {
+            //前提(鑑別力): 內附表於legacy時確有餘項(1.65.1: 非整串省略); 否則下列斷言與「無預設enable」無法區分
+            let rest = pwDefaults.enableFeatures.filter((v) => pwDefaults.enableLegacyOmit.indexOf(v) < 0)
+            assert.ok(rest.length > 0 && rest.length < pwDefaults.enableFeatures.length, JSON.stringify(rest))
+            assert.strict.deepStrictEqual(defEnStr(), '--enable-features=' + rest.join(','))
             let out = g({ args: ['--enable-features=Foo'] })
-            //§2.2: 依呼叫時之PLAYWRIGHT_LEGACY_SCREENSHOT計算enable預設
-            assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=Foo'])
-            assert.strict.deepStrictEqual(out.ignoreDefaultArgs, [defDisStr()])
+            //§2.2: 依呼叫時之PLAYWRIGHT_LEGACY_SCREENSHOT計算enable預設; 命令列之enable恆至多一串
+            assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=' + [...rest, 'Foo'].join(',')])
+            assert.strict.deepStrictEqual(out.ignoreDefaultArgs, [defDisStr(), defEnStr()])
             let cmd = simulatePwCmdline(out)
-            assert.strict.deepStrictEqual(findSwitches(cmd, 'enable-features'), ['--enable-features=Foo'])
+            assert.strict.deepStrictEqual(findSwitches(cmd, 'enable-features'), ['--enable-features=' + [...rest, 'Foo'].join(',')])
             assertOneGuardedDisable(out)
+        }
+        finally {
+            delete process.env.PLAYWRIGHT_LEGACY_SCREENSHOT
+        }
+    })
+
+    it('PLAYWRIGHT_LEGACY_SCREENSHOT已設: 呼叫端未給enable → 不另附、不忽略預設餘項串; 呼叫端ignore預設餘項串 → 命令列無enable; 呼叫端啟用被省略之項 → 併入同一串', function() {
+        process.env.PLAYWRIGHT_LEGACY_SCREENSHOT = '1'
+        try {
+            let rest = pwDefaults.enableFeatures.filter((v) => pwDefaults.enableLegacyOmit.indexOf(v) < 0)
+            //未給enable: 與Playwright預設完全相同, 不加ignore、不另附(§3.1第6、7步)
+            let a = g()
+            assert.strict.deepStrictEqual(findSwitches(a.args, 'enable-features'), [])
+            assert.strict.deepStrictEqual(a.ignoreDefaultArgs, [defDisStr()])
+            assert.strict.deepStrictEqual(findSwitches(simulatePwCmdline(a), 'enable-features'), [defEnStr()])
+            //ignore預設餘項串(§3.1第4步): 去掉預設enable
+            let b = g({ ignoreDefaultArgs: [defEnStr()] })
+            assert.strict.deepStrictEqual(findSwitches(b.args, 'enable-features'), [])
+            assert.strict.deepStrictEqual(b.ignoreDefaultArgs, [defDisStr(), defEnStr()])
+            assert.strict.deepStrictEqual(findSwitches(simulatePwCmdline(b), 'enable-features'), [])
+            //呼叫端啟用legacy時被省略之項: 與預設餘項併為一串
+            let omit = pwDefaults.enableLegacyOmit[0]
+            let c = g({ args: ['--enable-features=' + omit] })
+            assert.strict.deepStrictEqual(findSwitches(c.args, 'enable-features'), ['--enable-features=' + [...rest, omit].join(',')])
+            assert.strict.deepStrictEqual(findSwitches(simulatePwCmdline(c), 'enable-features').length, 1)
         }
         finally {
             delete process.env.PLAYWRIGHT_LEGACY_SCREENSHOT
@@ -239,6 +268,9 @@ describe('unit-mergeFeatures', function() {
             let out = g({ args })
             let cmd = simulatePwCmdline(out)
             assert.strict.deepStrictEqual(effectiveFeatures(cmd, 'enable-features').has('CDPScreenshotNewSurface'), false, JSON.stringify(args))
+            //1.65.1起預設enable有兩項: 只剔除被呼叫端停用之項, 其餘預設項仍在(同一串)
+            assert.strict.deepStrictEqual(effectiveFeatures(cmd, 'enable-features').has('SkipListAccountsWithoutGaiaCookies'), true, JSON.stringify(args))
+            assert.strict.deepStrictEqual(findSwitches(cmd, 'enable-features').length, 1, JSON.stringify(args))
             assert.strict.deepStrictEqual(out.ignoreDefaultArgs, [defDisStr(), defEnStr()], JSON.stringify(args))
             assertOneGuardedDisable(out)
         }
@@ -265,10 +297,12 @@ describe('unit-mergeFeatures', function() {
         assert.ok(msgs.every((m) => !m.includes('SECRET')))
     })
 
-    it('呼叫端enable之項與Playwright預設disable同名(如Translate): 行為不變(Chromium以停用為準), debug時提示', function() {
+    it('呼叫端enable之項與Playwright預設disable同名(如MediaRouter): 行為不變(Chromium以停用為準), debug時提示', function() {
+        //前提: MediaRouter為內附表之預設disable項(1.65.1之Translate已不在其中)
+        assert.ok(pwDefaults.disableFeatures.includes('MediaRouter'))
         let logs = []
-        let out = g({ debug: true, funLog: (l, s) => logs.push(s), args: ['--enable-features=Translate'] })
-        assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=CDPScreenshotNewSurface,Translate'])
+        let out = g({ debug: true, funLog: (l, s) => logs.push(s), args: ['--enable-features=MediaRouter'] })
+        assert.strict.deepStrictEqual(findSwitches(out.args, 'enable-features'), ['--enable-features=' + [...pwDefaults.enableFeatures, 'MediaRouter'].join(',')])
         assert.ok(logs.includes('[w-playwright getChromiumLaunchOptions] enable-features items also in the default disable-features have no effect'), JSON.stringify(logs))
         assertOneGuardedDisable(out)
     })
@@ -304,7 +338,9 @@ describe('unit-mergeFeatures', function() {
     })
 
     it('呼叫端disable重複預設或守門者不重複', function() {
-        let out = g({ args: ['--disable-features=Translate,' + GUARD + ',Translate'] })
+        //前提: MediaRouter為內附表之預設disable項
+        assert.ok(pwDefaults.disableFeatures.includes('MediaRouter'))
+        let out = g({ args: ['--disable-features=MediaRouter,' + GUARD + ',MediaRouter'] })
         assert.strict.deepStrictEqual(out.args, ['--disable-features=' + [...pwDefaults.disableFeatures, GUARD].join(',')])
     })
 

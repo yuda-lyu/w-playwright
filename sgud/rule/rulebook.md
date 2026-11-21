@@ -17,15 +17,18 @@
 | 04 | `ignoreDefaultArgs` 須為元素皆非空字串之陣列(`true` 不收);其中功能開關樣式之項一律剔除(F7);含與預設串完全相同之項表「不要 Playwright 預設清單」(enable 同理) | `unit-mergeFeatures` F6、F7、第4步;`api-pwDrift` 呼叫端案 |
 | 05 | enable 於「呼叫端給了 enable 開關(含無值)」「要去掉預設 enable」「呼叫端 disable 與預設 enable 同名」任一成立時處理;剔除功能名(去 `*`、取 `<`／`:` 前)屬守門者與同時出現在呼叫端 disable 者(原則 3);與預設 disable 同名者不改行為、debug 提示 | `unit-mergeFeatures` F8、原則3(3 案)、提示案;變異 M14 |
 | 06 | 合併串恰等於預設串者不加 ignore、不另附(F18) | `unit-mergeFeatures` F18(以假想之未來內附表) |
-| 07 | 預設 enable 依呼叫時之 `PLAYWRIGHT_LEGACY_SCREENSHOT`(真值即無預設 enable) | `unit-mergeFeatures` 兩案 |
+| 07 | 預設 enable 依呼叫時之 `PLAYWRIGHT_LEGACY_SCREENSHOT`:真值時只省略內附表 `enableLegacyOmit` 之項、餘項仍給(1.64.1 預設 enable 僅一項,故當時為「無預設 enable」;1.65.1 起餘項 `SkipListAccountsWithoutGaiaCookies` 仍給,命令列仍恰一串 enable);規則之意圖不變:合併所認定之 Playwright 預設 enable 須與其實際命令列一致 | `unit-mergeFeatures`(未設 1 案、已設 2 案,含鑑別力前提斷言);`unit-setBrowserTypeForTest`(回調改環境後重新合併);`api-pwDrift`(legacy 隔離行程之真命令列:基準之 enable ＝ 表扣除 `enableLegacyOmit`,合併後 enable 恰一串);變異:`getDefaultEnableFeatures` 於 legacy 改回 `[]` 時上列三處轉紅 |
 | 08 | `ignoreAllDefaultArgs`、自用鍵(`autoInstall`、`installDeps`、`debug`、`funLog`、`onTrace`)、`__testHook*` 不轉傳(提示不含鍵名);`channel`、`executablePath` 恆為輸出之自有鍵(未給為 `undefined`,蓋過 Playwright 用戶端之 `_defaultLaunchOptions`);其餘鍵原樣轉傳(V7、V8) | `unit-mergeFeatures` 第10步、全域預設案;`api-pwDrift` 全域預設案;變異 M5、M19 |
 | 09 | 同組輸入不同順序之輸出開關字串相同(原則 2);不改寫呼叫端物件(V9);每次回新物件;`getChromiumLaunchOptions` 永不拋錯(內部缺陷時回只含守門之保底輸出) | `unit-mergeFeatures` |
 
 ### R-PW-TABLE 內附表與版本(設計 §3.2)
 
 - `src/pwDefaults.mjs` 對應 `package.json` 之 `playwright-core` 精確版本;實裝版本 ≠ 表即拒絕啟動 `E_PW_VERSION`(F1).表不由腳本產生.
-- 升版流程:改精確版本 → `api-pwDrift` 轉紅並印出實際清單與靜態抽取 → 人工更新表 → 全套綠(含 `api-realChromeGuard` 實際通過)→ 發布 → 全庫連動.
-- 測試:`api-pwDrift`(未合併之基準與表逐項相同、靜態抽取一致)、`unit-env`(版本不符)、`unit-pkg`(依賴精確版).變異 M8.
+- 升版流程:以 `npm i playwright-core@<版> --save-exact` 改精確版本(不得改宣告後 `npm i`,會繞過冷卻期)→ `api-pwDrift` 轉紅並印出實際清單與靜態抽取 → 人工更新表 → 全套綠(含 `api-realChromeGuard` 實際通過)→ 發布 → 全庫連動.
+- 表之鍵:`version`、`disableFeatures`、`enableFeatures`、`enableLegacyEnv`、`enableLegacyOmit`(legacy 環境變數為真時 Playwright 自預設 enable 省略之項)、`guardFeatures`、`channels`.
+- 升版核對清單(每次升版逐項,人工讀 `node_modules/playwright-core/lib/coreBundle.js`;Playwright 之 release notes 不載啟動開關之變動,1.65.1 即然):①`chromiumSwitches.ts` 段之 `disabledFeatures`、`enabledFeatures()`(含條件式項目,如 legacy 環境變數省略何項);②registry 之 Chromium 系通道全集與 Windows 前綴/後綴(`_findChrome.mjs` 所仿);③錯誤訊息詞 `Executable doesn't exist at`、`Host system is missing dependencies`、`Missing system dependencies`(`_launchCore.mjs` 之比對);④CLI 選項 `--no-remove`、`--only-shell`、`--no-shell`、`install-deps`;⑤本套件取用之內部介面:`playwright-core/lib/coreBundle` 之 `utils.debugMode`、`registry.registryDirectory`、`registry.registry.findExecutable`、package `exports` 仍列 `./lib/coreBundle`;⑥`api-pwDrift` 之 legacy 隔離行程案(真命令列)與真 Chrome／Edge／完整 Chromium 之一次性守門實證.
+- 表之變更紀錄:1.64.1 → 1.65.1(第 440 項,2026-11-21):disable 18 → 16 項(去 `DialMediaRouteProvider`、`GlobalMediaControls`、`BlockOriginHeaderModificationOnRedirect`、`Translate`、`AutoDeElevate`;增 `HttpsFirstBalancedModeAutoEnable`、`TcpPortRandomizationWin`、`PreconnectToSearch`);enable 1 → 2 項(增 `SkipListAccountsWithoutGaiaCookies`,且 legacy 環境變數自此只省略 `CDPScreenshotNewSurface`、不再整串省略 → 新增 `enableLegacyOmit` 與 R-PW-MERGE 07 之修正);`channels` 10 項不變;registry 之 Chrome/Edge 路徑不變.
+- 測試:`api-pwDrift`(未合併之基準與表逐項相同、靜態抽取一致、legacy 隔離行程之真命令列)、`unit-env`(版本不符)、`unit-pkg`(依賴精確版).變異 M8.
 
 ### R-PW-ENV 環境(設計 §2.2 第②步、F14、F15)
 

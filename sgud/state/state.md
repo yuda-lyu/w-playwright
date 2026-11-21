@@ -2,15 +2,15 @@
 
 本檔記載當前已開發功能之最新狀態(只記現況、不寫過程;過程見 `sgud/exp/experience.md`).藍圖見 `sgud/rule/rulebook.md`.
 
-- 最近更新:2026-11-13(排程第 442 項實作輪 I1).版本 1.0.0,**未發布**(發布與 `dist` 由發布流程產製).
-- 依賴:`playwright-core` 精確 `1.64.1`;dev `w-package-tools`.不依 wsemi.
+- 最近更新:2026-11-21(排程第 440 項:`playwright-core` 升至 1.65.1).版本以 `package.json` 為準;發布與 `dist` 由發布流程產製.
+- 依賴:`playwright-core` 精確 `1.65.1`(內建 Chromium 159.0.8154.6、revision 1255);dev `w-package-tools`.不依 wsemi.
 
 ## 功能與帳本條目
 
 | 功能 | 帳本 | 狀態 | 測試 |
 |---|---|---|---|
-| 合併(恰一串 `--disable-features`＋守門) | R-PW-MERGE 01～09 | 完成 | `unit-mergeFeatures`、`api-pwDrift`、`api-realChromeGuard` |
-| 內附表與版本比對 | R-PW-TABLE | 完成(1.64.1) | `api-pwDrift`、`unit-env`、`unit-pkg` |
+| 合併(恰一串 `--disable-features`＋守門;legacy 環境變數下之預設 enable 依 `enableLegacyOmit`) | R-PW-MERGE 01～09 | 完成 | `unit-mergeFeatures`、`api-pwDrift`、`api-realChromeGuard` |
+| 內附表與版本比對 | R-PW-TABLE | 完成(1.65.1;表之變更見帳本) | `api-pwDrift`、`unit-env`、`unit-pkg` |
 | 環境拒絕(PWDEBUG、SELENIUM_REMOTE_URL) | R-PW-ENV | 完成 | `unit-env` |
 | 兩入口同一順序 | R-PW-ORDER | 完成 | `unit-env`、`unit-logonGuard` |
 | 輸入檢測 | R-PW-OPT | 完成 | `unit-opt` |
@@ -25,13 +25,13 @@
 | 全庫:只經 w-playwright | R-PW-ONLY | **未做**(遷移輪 M1～M6) | 盤點指令見帳本 |
 | 全庫:使用端接線測試 | R-PW-WIRING | **未做**(遷移輪) | — |
 
-## 守門之實證(Windows 11;皆無頭;經本套件合併參數;錯誤密碼次數前後讀取)
+## 守門之實證(Windows 11;皆無頭;經本套件合併參數;錯誤密碼次數前後讀取;現況為 Playwright 1.65.1 下之結果,1.64.1 下之舊結果見經驗檔)
 
 | 日期 | 瀏覽器 | 通道 | 版本 | 生效之 disable | 增量 |
 |---|---|---|---|---|---|
-| 2026-11-13 | Google Chrome | `chrome` | 157.0.8103.78 | ⊇ 預設∪守門;命令列恰一串 | 0 |
-| 2026-11-13 | Microsoft Edge | `msedge` | 157.0.4341.46 | 19 項＝預設∪守門 | 0 |
-| 2026-11-13 | Chromium(revision 1248) | `chromium` | 156.0.8078.4 | 19 項＝預設∪守門 | 0 |
+| 2026-11-21 | Google Chrome | `chrome` | 157.0.8103.79 | ⊇ 預設∪守門;命令列恰一串(`api-realChromeGuard` 常駐) | 0 |
+| 2026-11-21 | Microsoft Edge | `msedge` | 157.0.4341.60 | 17 項＝預設∪守門;命令列恰一串 | 0 |
+| 2026-11-21 | Chromium(revision 1255) | `chromium` | 159.0.8154.6 | 17 項＝預設∪守門;命令列恰一串 | 0 |
 
 未驗(不視為已證):有頭;`chrome-beta`／`dev`／`canary`、`msedge-beta`／`dev`／`canary`;持久設定檔之 `chrome://flags`;企業原則;非 Windows.Chrome／Edge 自動更新後須先跑 `api-realChromeGuard`(實際通過)再跑會連續啟動之測試.
 
@@ -43,6 +43,6 @@
 
 - 遷移輪(各使用端改依本套件、移除 w-package-tools-e2e 之 `launchChromium`)未做,依設計 §5、§6 由主控派 M1～M6.
 - 有頭之守門效果未實測(主機不得開可見視窗);首次證據由使用端遷移後之首次全套於守門下取得.
-- Playwright 升版(第 440 項)時依 R-PW-TABLE 之流程更新內附表.
+- 下次 Playwright 升版依 R-PW-TABLE 之流程與〈升版核對清單〉(release notes 不載啟動開關之變動;1.65.1 之 legacy 語意變動即由 `api-pwDrift` 之隔離行程案抓到).
 - 殘餘(不在保證內):登入守門跨行程之並行啟動不協調;持久設定檔之 `chrome://flags`;企業原則;已驗瀏覽器版本不程式化(以 `api-realChromeGuard` 之輸出為紀錄).
 - 自動啟動時之自動安裝無逾時上限(`ensureChromium({ timeout })` 可先行呼叫).

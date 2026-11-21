@@ -100,7 +100,7 @@ describe('unit-opt', function() {
         }
     })
 
-    it('S3: channel只收1.64.1之Chromium通道全集, 其餘視為未給', function() {
+    it('S3: channel只收1.65.1之Chromium通道全集, 其餘視為未給', function() {
         for (let c of pwDefaults.channels) {
             assert.strict.deepStrictEqual(g({ channel: c }).channel, c)
         }

@@ -13,8 +13,8 @@ import { runChild, cleanEnv } from './tools/runChild.mjs'
 //launch與安裝子行程皆以注入替身, 不下載、不啟動瀏覽器
 
 
-//Playwright 1.64.1原文(lib/coreBundle.js): 缺少瀏覽器執行檔、Linux缺少系統相依(兩種訊息)
-let errMissing = () => new Error('Executable doesn\'t exist at C:\\ms-playwright\\chromium_headless_shell-1248\\chrome-headless-shell.exe\nLooks like Playwright was just installed or updated.')
+//Playwright 1.65.1原文(lib/coreBundle.js): 缺少瀏覽器執行檔、Linux缺少系統相依(兩種訊息)
+let errMissing = () => new Error('Executable doesn\'t exist at C:\\ms-playwright\\chromium_headless_shell-1255\\chrome-headless-shell.exe\nLooks like Playwright was just installed or updated.')
 let errDeps = () => new Error('Host system is missing dependencies to run browsers.\nPlease install them with the following command:')
 let errDeps2 = () => new Error('Missing system dependencies required to run browser chromium. Install them with: sudo npx playwright install-deps chromium')
 let errOther = () => new Error('Target page, context or browser has been closed')

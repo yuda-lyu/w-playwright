@@ -6,7 +6,7 @@ import { findChromeCore, readVersionDir } from '../src/_findChrome.mjs'
 
 
 //unit-findSystemChrome: 以test/_tmp之假目錄樹模擬Windows五種前綴與版本資料夾(設計§8.1); 不呼叫任何launch
-//路徑表同playwright-core 1.64.1 registry(chrome: \Google\Chrome\Application\chrome.exe, msedge: \Microsoft\Edge\Application\msedge.exe)
+//路徑表同playwright-core 1.65.1 registry(chrome: \Google\Chrome\Application\chrome.exe, msedge: \Microsoft\Edge\Application\msedge.exe)
 
 
 let fdTmp = path.resolve('./test/_tmp/findSystemChrome')
