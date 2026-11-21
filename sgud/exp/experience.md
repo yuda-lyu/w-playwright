@@ -27,6 +27,16 @@
 8. **需帶環境變數啟動 node 腳本時**:Git Bash 下 `cmd /c "set X=1&& node …"` 之 `/c` 會被 MSYS 轉成 `C:/` 而開出互動式 cmd 空轉(不會執行目標腳本、離開碼 0);改以一支 `.mjs` 於內部設 `process.env` 後 `await import()` 目標腳本.
 9. **`npm i <套件>@<版> --save-exact` 之副作用**:同時把 `package-lock.json` 之 `version` 對齊 `package.json`,並於 `package.json` 末尾補換行;皆非人為改版號.
 
+## 一之三、啟動語系(2026-11-21,第 585 項)
+
+1. **Chromium 159 不再繼承主機系統語系**(應用程式語系預設 en-US;156 繼承):影響 generic 字族之字型與行高,不只 `navigator.language`;Playwright context 之 `locale` 只改 `navigator.language`.`--lang=<語系>` 補回(兩種修訂雙向實測,見第 440 項之調查報告;本輪於 revision 1255 重現:預設 zh-TW／微軟正黑體／14px 拉丁字 31.55×19,`lang:false` 為 en-US／Arial／29.56×16,中文字 Microsoft YaHei).
+2. **量測法**:CDP `CSS.getPlatformFontsForNode`(須 `DOM.enable`、`CSS.enable`、`DOM.getDocument`、`DOM.querySelector`)取實際用於節點之字型;`familyName` 為**在地化名稱**(繁中主機回 `微軟正黑體`,不是 `Microsoft JhengHei`),比對須兩者皆收.
+3. **Chromium 會正規化語系**:`--lang=ja-JP` 之 `navigator.language` 為 `ja`;故真瀏覽器測試之預期值不寫「等於傳入字串」,改比「與呼叫端自給同一 `--lang` 之結果逐項相同」(`api-lang` 之 `callerHost`),並只在 `zh-TW` 主機硬比字串.
+4. **預設行為依主機環境者,既有測試須固定環境**:新增預設後,斷言 `args` 完整內容之三檔(`unit-mergeFeatures`、`unit-opt`、`unit-setBrowserTypeForTest`)共 17 案隨主機語系而紅(補入一個 `--lang`);處置為於 `before` 令系統語系取不到(`test/tools/sysLang.mjs` 之 `muteSysLang`,取代 `Intl.DateTimeFormat`),斷言本身不動.`Intl` 於 Windows 之 Node 取自作業系統,環境變數 `LANG`／`LC_ALL` 不影響,故子行程法無效,只能取代 `Intl.DateTimeFormat`(本套件每次合併時才讀,不快取,故可取代).
+5. **`opt.lang` 採單一選項(字串或 `false`)**而非「`lang`＋布林」兩選項:三態(指定／關閉／預設)一個鍵即足,無矛盾組合;無效值依 K3 視為未給(取系統語系)並提示.`args` 與 `opt.lang` 並存時 `args` 為準(原樣保留,呼叫端最明確之低階寫法),`debug` 時提示.
+6. **`api-pwDrift` 之真命令列**:Playwright 1.65.1 本身不帶 `--lang`(基準命令列無 lang 開關,已加斷言;升版若自帶即轉紅,合併規則須重議);「呼叫端優先」做成**不補**(全命令列之 lang 開關即呼叫端所給者),不依賴 Chromium 對重複同名開關之取捨(未驗證).
+7. **eslint 兩點**:`no-lone-blocks`(區塊內無 `let` 宣告即為多餘)、`no-mixed-operators`(`a && b || c && d` 須加括號).
+
 ## 二、測試與驗證
 
 1. **真瀏覽器之守門驗證**:讀 `chrome://version` 之「指令列變化版本」(`#variations-cmd-section` 內之 base64 JSON,為生效之覆寫);headless shell 無此頁(`net::ERR_INVALID_URL`),只能驗命令列.錯誤次數於啟動時即增加,關閉後以 1 秒間隔讀 8 次作否定斷言之觀察窗.

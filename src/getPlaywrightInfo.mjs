@@ -1,6 +1,7 @@
 import pwDefaults from './pwDefaults.mjs'
 import { pwState, isTableMatch } from './_pw.mjs'
 import { findChromeCore, readVersionDir } from './_findChrome.mjs'
+import { getSystemLang } from './getChromiumLaunchOptions.mjs'
 
 
 /**
@@ -20,14 +21,14 @@ function deepFreeze(o) {
 /**
  * 取得診斷資訊(深凍結之防禦性複本, 與合併器之內部表不共用); 不啟動瀏覽器; 永不拋錯
  *
- * @returns {Object} 回傳{ coreVersion, tableVersion, tableMatch, guardFeatures, defaultDisableFeatures, defaultEnableFeatures, systemChrome: { path, version } }; coreVersion為實裝playwright-core版本, tableVersion為內附表版本, systemChrome之version取chrome.exe旁之版本資料夾名(無則'')
+ * @returns {Object} 回傳{ coreVersion, tableVersion, tableMatch, guardFeatures, defaultDisableFeatures, defaultEnableFeatures, systemLang, systemChrome: { path, version } }; coreVersion為實裝playwright-core版本, tableVersion為內附表版本, systemLang為呼叫端未給--lang時本套件預設補入之主機系統語系(如'zh-TW'; 取不到為''), systemChrome之version取chrome.exe旁之版本資料夾名(無則'')
  * @example
  *
  * import wpw from 'w-playwright'
  *
  * let info = wpw.getPlaywrightInfo()
- * console.log(info.tableMatch, info.systemChrome.version)
- * // => true '157.0.8103.78'
+ * console.log(info.tableMatch, info.systemLang, info.systemChrome.version)
+ * // => true 'zh-TW' '157.0.8103.78'
  *
  */
 function getPlaywrightInfo() {
@@ -45,6 +46,7 @@ function getPlaywrightInfo() {
         guardFeatures: [...pwDefaults.guardFeatures],
         defaultDisableFeatures: [...pwDefaults.disableFeatures],
         defaultEnableFeatures: [...pwDefaults.enableFeatures],
+        systemLang: getSystemLang(),
         systemChrome: {
             path: sysPath,
             version: sysVer,

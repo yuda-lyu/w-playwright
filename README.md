@@ -20,8 +20,14 @@ To view documentation or get support, visit [docs](https://yuda-lyu.github.io/w-
 > - 呼叫端之 `--disable-features`／`--enable-features` 之任何寫法(大小寫、單一連字號、無值、多個)一律吸收進同一串;`--enable-features` 中屬守門功能或同時被呼叫端停用之項目剔除(呼叫端停用 Playwright 預設啟用之功能時,預設之啟用亦剔除);啟用之項目與 Playwright 預設停用者同名時 Chromium 以停用為準(`debug` 時提示)。
 > - `args` 任一元素非字串、前後有空白、不以 `-` 開頭、等於 `--`、為 `--single-argument`(大小寫與連字號不拘)、含控制字元(C0、DEL、C1;C1 之 U+0085 於 Windows 之 Chromium 會被當空白修剪,`'--\u0085'` 即成開關終止符)、元素數逾 10000,或功能項非 ASCII 語法(`^\*?[A-Za-z0-9_]+([<:]...)?$`)時,**整個 `args` 視為 `[]`**(守門照加;呼叫端其餘參數如 `--proxy-server` 一併捨棄——需保語意者改用 `proxy` 選項)。
 > - `ignoreDefaultArgs: true` 不支援(視為 `[]`);`ignoreDefaultArgs` 內之功能開關樣式項目一律剔除;其內含與 Playwright 預設 disable 串完全相同之項,表示不要 Playwright 之預設清單(守門照加)。
-> - `ignoreAllDefaultArgs` 與 Playwright 內部之 `__testHook*` 鍵一律刪除;`channel`、`executablePath` 恆為輸出之鍵(未給時為 `undefined`,使 Playwright 之全域預設啟動選項無法蓋過);其餘鍵原樣轉傳給 Playwright。
+> - `ignoreAllDefaultArgs` 與 Playwright 內部之 `__testHook*` 鍵一律刪除;自用鍵(`autoInstall`、`installDeps`、`lang`、`debug`、`funLog`、`onTrace`)不轉傳;`channel`、`executablePath` 恆為輸出之鍵(未給時為 `undefined`,使 Playwright 之全域預設啟動選項無法蓋過);其餘鍵原樣轉傳給 Playwright。
 > - 實際呼叫 Playwright 之前(合併與一切回調之後)同步再檢一次環境;`PLAYWRIGHT_LEGACY_SCREENSHOT` 於合併後改變者依現值重新合併。
+
+> **啟動語系(`--lang`)**:Chromium 159(Playwright 1.65.1 之 revision 1255)起**不再繼承主機之系統語系**,應用程式語系預設為 en-US(Playwright 1.64.1 之 revision 1248,Chromium 156,繼承主機;其間之版本未逐一驗證)。影響不只 `navigator.language`:generic 字族(`sans-serif` 等)依應用程式語系選字——例如 Windows 繁中主機上,`sans-serif` 之拉丁字由微軟正黑體變為 Arial、中文字由微軟正黑體變為 Microsoft YaHei(簡體字形),14px 單行之行高 19 → 16、寬度約 −6%,截圖與版面量測因而與 156 不同。Playwright 之 context 選項 `locale` 只改 `navigator.language`、**不改字型**,無法補救。故本套件於呼叫端**未給** `--lang` 時,命令列補恰一個 `--lang=<主機系統語系>`(取自 Node 之 `Intl.DateTimeFormat().resolvedOptions().locale`,如 `zh-TW`;取不到或不合語法時不補,不寫死任何語系),恢復 156 之行為:
+> - 呼叫端 `args` 已含 `--lang`(`--lang=…`、`-lang=…`、大小寫、無值皆算)者原樣保留、不另補。
+> - `opt.lang`:語系字串(如 `'en-US'`、`'ja-JP'`;2～3 字母之語言碼加以 `-` 相接之子標籤,至多 35 字元)改補該語系;`false` 關閉本預設(回到 Chromium 159 之 en-US);無效值視為未給(`debug` 時提示)。`opt.lang` 與 `args` 之 `--lang` 並存時以 `args` 為準(`debug` 時提示)。
+> - 補入之位置:呼叫端其餘 `args` 之後、`--enable-features` 與合併 `--disable-features` 之前(後者仍為最後一個元素)。兩個啟動入口與 `getChromiumLaunchOptions` 一致;`getPlaywrightInfo().systemLang` 呈現將補入之值。
+> - 結果隨主機之系統語系而變(156 時代即如此);需要跨機器一致者,請明確給 `lang` 或 `args: ['--lang=…']`。Chromium 會將語系正規化(如 `ja-JP` → `navigator.language` 為 `ja`)。
 
 > **版本**:`dependencies` 只有 `playwright-core` 精確 `1.65.1`;本套件內附該版之預設清單(`src/pwDefaults.mjs`),**實裝版本與內附表不同即拒絕啟動**(`E_PW_VERSION`;例如依賴樹以 overrides 換了版本)。升版只改本套件:改精確版本 → 本套件測試 `api-pwDrift` 轉紅並印出新清單 → 更新內附表 → 全套綠(含 `api-realChromeGuard` 實際通過)→ 發布。
 
@@ -58,6 +64,12 @@ if (wpw.findSystemChrome()) {
     await b.close()
 }
 
+//語系: 預設補主機系統語系之--lang(見〈Core〉啟動語系); 指定語系或關閉
+let b1 = await wpw.launchChromium({ lang: 'en-US' }) //固定為en-US(不論主機語系)
+await b1.close()
+let b2 = await wpw.launchChromium({ lang: false }) //不補--lang(Chromium 159之預設en-US)
+await b2.close()
+
 //持久設定檔('' 表Playwright之暫存設定檔; 非空時須為絕對路徑)
 let context = await wpw.launchChromiumPersistent('', { headless: true })
 await context.close()
@@ -75,12 +87,12 @@ console.log(wpw.getChromiumLaunchOptions({ args: ['--disable-features=Translate'
 | `getChromiumLaunchOptions(opt)` | 合併後之新物件(供檢視與診斷;環境、版本與登入守門只在兩個啟動入口,請勿自行以之呼叫 playwright-core) | 永不拋錯 |
 | `ensureChromium(opt)` | `Promise<{ kind }>` | reject `E_INSTALL` |
 | `findSystemChrome(opt)` | 絕對路徑或 `''` | 永不拋錯 |
-| `getPlaywrightInfo()` | 深凍結之診斷資訊 `{ coreVersion, tableVersion, tableMatch, guardFeatures, defaultDisableFeatures, defaultEnableFeatures, systemChrome: { path, version } }` | 永不拋錯 |
+| `getPlaywrightInfo()` | 深凍結之診斷資訊 `{ coreVersion, tableVersion, tableMatch, guardFeatures, defaultDisableFeatures, defaultEnableFeatures, systemLang, systemChrome: { path, version } }`(`systemLang` 為呼叫端未給 `--lang` 時預設補入之主機系統語系,取不到為 `''`) | 永不拋錯 |
 | `setBrowserTypeForTest(fake)` | 還原函數 | `fake` 不符即同步 throw `E_ARG` |
 
 啟動入口之順序(兩者一致):快照 opt(每鍵只讀一次)→ 環境檢查(`E_ENV`)→ 版本檢查(`E_PW_VERSION`)→ 登入守門(`E_LOGON_GUARD`,見下)→ 合併 → 呼叫 Playwright(或測試替身)→ 受管瀏覽器缺檔時依 `autoInstall` 安裝一次再啟動一次。
 
-`opt`(兩個啟動入口):Playwright `chromium.launch`(或 `launchPersistentContext`)之選項,加上自用鍵 `autoInstall`(布林,預設 false)、`installDeps`(布林,預設 false)、`debug`(布林,預設 false)、`funLog`、`onTrace`。`args`、`ignoreDefaultArgs`、`headless`(預設 true)、`channel`(`chromium`、`chrome-for-testing`、`chrome`、`chrome-beta`、`chrome-dev`、`chrome-canary`、`msedge`、`msedge-beta`、`msedge-dev`、`msedge-canary`)、`executablePath` 由本套件檢測;非預期之值視為未給、改用預設,`debug: true` 時以固定詞彙提示(不含傳入之值;同函數同鍵同原因每行程一次;有 `funLog` 交 `funLog('warn', 訊息)`,否則 `console.warn`)。其餘鍵原樣轉傳,由 Playwright 檢查(其拒絕經 `E_LAUNCH`)。
+`opt`(兩個啟動入口):Playwright `chromium.launch`(或 `launchPersistentContext`)之選項,加上自用鍵 `autoInstall`(布林,預設 false)、`installDeps`(布林,預設 false)、`lang`(語系字串或 `false`,預設未給＝主機系統語系;見〈Core〉啟動語系)、`debug`(布林,預設 false)、`funLog`、`onTrace`。`args`、`ignoreDefaultArgs`、`headless`(預設 true)、`channel`(`chromium`、`chrome-for-testing`、`chrome`、`chrome-beta`、`chrome-dev`、`chrome-canary`、`msedge`、`msedge-beta`、`msedge-dev`、`msedge-canary`)、`executablePath` 由本套件檢測;非預期之值視為未給、改用預設,`debug: true` 時以固定詞彙提示(不含傳入之值;同函數同鍵同原因每行程一次;有 `funLog` 交 `funLog('warn', 訊息)`,否則 `console.warn`)。其餘鍵原樣轉傳,由 Playwright 檢查(其拒絕經 `E_LAUNCH`)。
 
 | code | 時機 |
 |---|---|
@@ -124,7 +136,7 @@ console.log(wpw.getChromiumLaunchOptions({ args: ['--disable-features=Translate'
 
 ## Testing
 
-`npm test` 含:單元測試(不啟動瀏覽器)、`api-pwDrift`(以 headless shell 實際啟動,比對 Playwright 預設清單與合併後之命令列;Playwright 升版時轉紅)、`api-autoInstall`(以空的 `PLAYWRIGHT_BROWSERS_PATH` 實際下載 headless shell)、`api-realChromeGuard`(Windows 有 Chrome 且錯誤次數為 0 時,經本套件參數**實際啟動真 Chrome 一次**並驗證增量 0;否則 skip 並寫明原因)。測試之子行程一律清除 `PWDEBUG`、`SELENIUM_REMOTE_URL` 等環境變數。
+`npm test` 含:單元測試(不啟動瀏覽器)、`api-pwDrift`(以 headless shell 實際啟動,比對 Playwright 預設清單與合併後之命令列;Playwright 升版時轉紅)、`api-lang`(以 headless shell 實際啟動,驗證啟動語系預設:`navigator.language`、`sans-serif` 之實際字型〔CDP `CSS.getPlatformFontsForNode`〕與行高;預設對關閉須有差異,故主機語系為 en-US 者該案略過)、`api-autoInstall`(以空的 `PLAYWRIGHT_BROWSERS_PATH` 實際下載 headless shell)、`api-realChromeGuard`(Windows 有 Chrome 且錯誤次數為 0 時,經本套件參數**實際啟動真 Chrome 一次**並驗證增量 0;否則 skip 並寫明原因)。測試之子行程一律清除 `PWDEBUG`、`SELENIUM_REMOTE_URL` 等環境變數。
 
 啟動真 Chrome 之使用端測試可深層引用 `w-playwright/test/tools/readBadPassword.mjs`(與執行期登入守門同一讀法)作前後比對:
 

@@ -114,6 +114,17 @@ async function main() {
         await server.close()
     }
 
+    //語系預設(R-PW-LANG)之真命令列: 子行程之主機系統語系(Intl)與四種呼叫(未給、呼叫端args有--lang、opt.lang為字串、opt.lang為false)
+    r.hostLang = Intl.DateTimeFormat().resolvedOptions().locale
+    r.langCases = {}
+    for (let [k, opt] of [['default', {}], ['caller', { args: ['--lang=en-US'] }], ['opt', { lang: 'ja-JP' }], ['off', { lang: false }]]) {
+        let o = wpw.getChromiumLaunchOptions({ ...opt, executablePath: shellExe })
+        assertShell(o.executablePath)
+        let server = await chromium.launchServer(o)
+        r.langCases[k] = { args: server.process().spawnargs.slice(1) }
+        await server.close()
+    }
+
     //Playwright全域預設啟動選項(_defaultLaunchOptions)帶executablePath時不得蓋過本套件之選項: 預設指向不存在之檔(安全: 若被採用即於啟動前失敗, 不起任何瀏覽器)
     {
         let pw = chromium._playwright

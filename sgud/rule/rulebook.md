@@ -18,8 +18,30 @@
 | 05 | enable 於「呼叫端給了 enable 開關(含無值)」「要去掉預設 enable」「呼叫端 disable 與預設 enable 同名」任一成立時處理;剔除功能名(去 `*`、取 `<`／`:` 前)屬守門者與同時出現在呼叫端 disable 者(原則 3);與預設 disable 同名者不改行為、debug 提示 | `unit-mergeFeatures` F8、原則3(3 案)、提示案;變異 M14 |
 | 06 | 合併串恰等於預設串者不加 ignore、不另附(F18) | `unit-mergeFeatures` F18(以假想之未來內附表) |
 | 07 | 預設 enable 依呼叫時之 `PLAYWRIGHT_LEGACY_SCREENSHOT`:真值時只省略內附表 `enableLegacyOmit` 之項、餘項仍給(1.64.1 預設 enable 僅一項,故當時為「無預設 enable」;1.65.1 起餘項 `SkipListAccountsWithoutGaiaCookies` 仍給,命令列仍恰一串 enable);規則之意圖不變:合併所認定之 Playwright 預設 enable 須與其實際命令列一致 | `unit-mergeFeatures`(未設 1 案、已設 2 案,含鑑別力前提斷言);`unit-setBrowserTypeForTest`(回調改環境後重新合併);`api-pwDrift`(legacy 隔離行程之真命令列:基準之 enable ＝ 表扣除 `enableLegacyOmit`,合併後 enable 恰一串);變異:`getDefaultEnableFeatures` 於 legacy 改回 `[]` 時上列三處轉紅 |
-| 08 | `ignoreAllDefaultArgs`、自用鍵(`autoInstall`、`installDeps`、`debug`、`funLog`、`onTrace`)、`__testHook*` 不轉傳(提示不含鍵名);`channel`、`executablePath` 恆為輸出之自有鍵(未給為 `undefined`,蓋過 Playwright 用戶端之 `_defaultLaunchOptions`);其餘鍵原樣轉傳(V7、V8) | `unit-mergeFeatures` 第10步、全域預設案;`api-pwDrift` 全域預設案;變異 M5、M19 |
+| 08 | `ignoreAllDefaultArgs`、自用鍵(`autoInstall`、`installDeps`、`lang`、`debug`、`funLog`、`onTrace`)、`__testHook*` 不轉傳(提示不含鍵名);`channel`、`executablePath` 恆為輸出之自有鍵(未給為 `undefined`,蓋過 Playwright 用戶端之 `_defaultLaunchOptions`);其餘鍵原樣轉傳(V7、V8) | `unit-mergeFeatures` 第10步、全域預設案;`api-pwDrift` 全域預設案;變異 M5、M19 |
 | 09 | 同組輸入不同順序之輸出開關字串相同(原則 2);不改寫呼叫端物件(V9);每次回新物件;`getChromiumLaunchOptions` 永不拋錯(內部缺陷時回只含守門之保底輸出) | `unit-mergeFeatures` |
+
+### R-PW-LANG 啟動語系預設(排程第 585 項,2026-11-21;唯一實作 `src/getChromiumLaunchOptions.mjs` 之 `mergeParsed` 第 3b 步、`getSystemLang`、`isLangStr`)
+
+- 背景:Chromium 159(headless shell／chromium revision 1255)不再繼承主機系統語系,應用程式語系預設 en-US(156、revision 1248 繼承);generic 字族(`sans-serif`)隨語系選字(Windows 繁中主機:拉丁字微軟正黑體 → Arial、中文字微軟正黑體 → Microsoft YaHei,14px 行高 19 → 16);Playwright context 之 `locale` 只改 `navigator.language`、不改字型.`--lang` 補回.
+- 選項 `opt.lang`:**語系字串或 `false`**(自用鍵,不轉傳).理由:單一選項即涵蓋「指定／關閉／預設」三態,不增「布林＋字串」之冗餘組合(`lang:'x'` 而 `useSystemLang:false` 之矛盾格);種類為 R-PW-OPT 既有種類之併用(S 型之語法檢測＋B1 之 `false`),無效者依 K3 視為未給並於 `debug` 提示(V19 格式).語法 `isLangStr`:`^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$` 且長度 ≤35(單一語系;不含逗號、底線、空白、控制字元;與系統語系共用同一判準).
+
+| 條 | 規則 | 測試 |
+|---|---|---|
+| 01 | 預設:呼叫端 `args`(有效者)無 lang 開關且 `opt.lang` 非 `false` 時,命令列補**恰一個** `--lang=<語系>`;語系＝`opt.lang`(有效字串)否則主機系統語系 `Intl.DateTimeFormat().resolvedOptions().locale`(每次合併時取得,不快取) | `unit-lang`(預設、各語系值、不快取);`api-lang`(真 headless shell:`navigator.language`、字型、行高);`api-pwDrift`(真命令列:16 格矩陣、接線、`next()`、四種呼叫);變異 L01、L10 |
+| 02 | 取不到(Intl 不存在、建構式或 `resolvedOptions` 拋錯、`locale` 非字串或不合語法)→ 不補、不寫死任何語系;輸出與無本功能時完全相同 | `unit-lang`(16 種取不到之形態);變異 L06 |
+| 03 | 呼叫端優先:`args` 含開關名為 lang 之任何寫法(`--lang=…`、`-lang=…`、大小寫、無值、空值)者原樣保留於原位、不補(全命令列之 lang 開關即呼叫端所給者;給兩個即兩個);`opt.lang` 為字串而 `args` 已有者 `opt.lang` 不採用並於 `debug` 提示(`opt.lang is ignored because args already contains a --lang switch`);`args` 整鍵無效(R-PW-MERGE 03)時其內之 `--lang` 一併捨棄、改補預設 | `unit-lang`(7 種寫法、兩個 lang、與功能開關並存、衝突提示、整鍵無效);`api-lang`(`callerArgs` 同 `optEn`);變異 L02、L09、L16 |
+| 04 | `opt.lang`:有效字串→改補該語系(不讀系統語系);`false`→不補(`args` 已有者仍原樣保留);`null`／`undefined`／無效(`true`、`''`、含空白／底線／逗號／非 ASCII、過長、非字串)→視為未給(取系統語系)並於 `debug` 提示 `invalid opt.lang: must be a locale string such as 'en-US' or false, using default the system language`(不含值);每鍵只讀一次(V11);存取拋錯視為無效 | `unit-lang`(22 種無效值、V11、存取器拋錯、提示全文與一次性);`api-lang`(`off`、`optEn`、`optJa`);變異 L03、L05、L08 |
+| 05 | 位置:`args` ＝呼叫端其餘 args(原序)＋`--lang`＋〔`--enable-features`〕＋合併 `--disable-features`(R-PW-MERGE 01:仍恆為最後一個元素);輸出與輸入順序無關(原則 2) | `unit-lang`(位置、順序無關、`assertGuarded`);變異 L04、L15 |
+| 06 | 兩入口(`launchChromium`、`launchChromiumPersistent`)與 `getChromiumLaunchOptions` 經同一合併,結果一致;`finalGate` 於 `PLAYWRIGHT_LEGACY_SCREENSHOT` 改變而重新合併時 lang 仍恰一個;`next(o)` 重走完整流程;`fallbackOptions`(內部缺陷之保底)只含守門、不含 lang(R-PW-MERGE 09) | `unit-lang`(8 種輸入 × 系統語系有／無 × 兩入口之替身、finalGate 案、保底案);`api-lang`(`persistentDefault`＝`default`);`api-pwDrift`;變異 L12～L14(逐點植入) |
+| 07 | `opt.lang` 不轉傳給 Playwright(`SELF_KEYS`);其餘未宣告之鍵(如 context 之 `locale`)仍原樣轉傳,且不影響本項 | `unit-lang`;`api-lang`(`defaultCtxLocaleEn`:語系變而字型不變);變異 L07 |
+| 08 | `getPlaywrightInfo().systemLang`＝本套件預設將補入之主機系統語系(同一取得函數 `getSystemLang`;取不到 `''`;深凍結) | `unit-lang`;變異 L11 |
+| 09 | 真瀏覽器之實證(headless shell revision 1255,Windows 繁中主機):預設 `navigator.language` 為主機語系、`sans-serif` 拉丁字與中文字皆微軟正黑體;`lang:false` 為 en-US、Arial／Microsoft YaHei;兩者行高、寬度不同(鑑別力);主機系統語系為 en-US 者「預設 ≠ 關閉」之案略過(略過不算通過) | `api-lang`(子行程 `test/tools/langProbe.mjs`) |
+
+- 站點全集(R-PW-LANG 之「須經同一合併」之處):①`mergeParsed`(唯一實作)——被 `getChromiumLaunchOptions`、`_launchCore.prepare`(兩入口)、`_launchCore.finalGate`(重新合併)三處呼叫;②`getPlaywrightInfo`(呈現);③`fallbackOptions`(刻意不套:保底只含守門).盤點指令(命中須只在 `mergeParsed` 與其輔助):`rg -n "SW_LANG|getSystemLang|isLangStr" src`、`rg -n "mergeParsed\(" src`;防空集合:前者須命中 `src/getChromiumLaunchOptions.mjs`.
+- 既有測試之處置:`unit-mergeFeatures`、`unit-opt`、`unit-setBrowserTypeForTest` 之斷言為 `args` 之完整內容與長度,於 `before` 以 `test/tools/sysLang.mjs` 之 `muteSysLang()` 令主機系統語系取不到(斷言本身未改、未放寬),使之不隨主機語系而變;語系預設之斷言集中於 `unit-lang`.新增測試若斷言 `args` 之完整內容,須先固定系統語系(`setSysLang`／`muteSysLang`).
+- 變異清單(R-PW-LANG;於 `./tmp` 之副本逐一植入,跑所列測試,須皆轉紅;2026-11-21 共 16 個皆轉紅,數字見該輪報告):L01 預設不補;L02 呼叫端 lang 偵測改為 `startsWith('--lang')`;L03 `lang:false` 不關閉;L04 lang 置於合併 disable 之後;L05 語系字串不檢測(只判非空);L06 取不到時寫死 `en-US`;L07 `lang` 不列自用鍵;L08 忽略 `opt.lang` 之字串;L09 拿掉呼叫端優先;L10 系統語系於模組載入時快取;L11 `getPlaywrightInfo().systemLang` 恆 `''`;L12／L13 持久／非持久入口各自去掉 `--lang`;L14 `finalGate` 重新合併後去掉 `--lang`;L15 lang 置於呼叫端其餘 args 之前;L16 衝突時不提示.
+- 未驗(不視為已證):真 Chrome／Edge／完整 Chromium 之語系行為(本項只實測 headless shell revision 1255);有頭;Linux／macOS;非 zh-TW 主機之字型(`api-lang` 之字型案在非 Windows 或非 zh-TW 主機略過).
 
 ### R-PW-TABLE 內附表與版本(設計 §3.2)
 
@@ -43,7 +65,7 @@
 
 ### R-PW-OPT 輸入檢測(設計 §7;dspec〈輸入參數之檢測機制〉§7 之 w-playwright 例外)
 
-- 不依 wsemi;`src/_check.mjs` 為最小實作,種類語意對齊 wsemi 同名種類(O1、B1、S1、S2、S3、F1、A3、N2 `'timer'`).opt 每鍵只讀一次(V11);非預期之值視為未給、改用預設(K3);`opt.debug` 時以固定詞彙提示(不含值,K9、V20;同函數同鍵同原因每行程一次;有 `funLog` 交 `funLog('warn', msg)`,否則 `console.warn`).
+- 不依 wsemi;`src/_check.mjs` 為最小實作,種類語意對齊 wsemi 同名種類(O1、B1、S1、S2、S3、F1、A3、N2 `'timer'`);`opt.lang`(語系字串或 `false`)見 R-PW-LANG 04,語法判準 `isLangStr` 於 `src/getChromiumLaunchOptions.mjs`.opt 每鍵只讀一次(V11);非預期之值視為未給、改用預設(K3);`opt.debug` 時以固定詞彙提示(不含值,K9、V20;同函數同鍵同原因每行程一次;有 `funLog` 交 `funLog('warn', msg)`,否則 `console.warn`).
 - 測試:`unit-opt`(V24 矩陣、讀次數、撤銷之 Proxy、提示全文).
 
 ### R-PW-ERR 錯誤契約(設計 §2.3;dspec〈診斷輸出與遮罩〉D1 例外、D2、D3)
@@ -87,6 +109,7 @@
 
 - `api-realChromeGuard` 常駐於全套:win32、有 Chrome、錯誤次數可讀且為 0 時,經本套件參數實際啟動真 Chrome 一次(無頭),`chrome://version` 之 `#variations-cmd-section`(base64 JSON)之 disable 集合 ⊇ 內附表 ∪ 守門、命令列恰一串、觀察窗內錯誤次數皆 0;不符條件即 skip(**略過不算通過**).同檔之對照(只起 headless shell)證明判準對未合併之命令列為 false.
 - 完整 Chromium 與 Edge:一次性 `node test/tools/guardProbe.mjs real <chromium|msedge>`(不常駐);驗證紀錄於 `state.md`.
+- 啟動語系之真瀏覽器驗證:`api-lang`(常駐;只起 headless shell,不觸發登入錯誤次數)見 R-PW-LANG 09.
 
 ## 二、全庫盤點規則(遷移後;各使用端之遷移輪逐包套用)
 
@@ -115,7 +138,8 @@ rg -n --glob '**/package.json' --glob '!**/node_modules/**' "\"playwright(-core)
 
 | 改動範圍 | 測試檔 |
 |---|---|
-| 合併(`getChromiumLaunchOptions.mjs`)、內附表 | `unit-mergeFeatures`、`unit-opt`、`api-pwDrift`、`api-realChromeGuard` |
+| 合併(`getChromiumLaunchOptions.mjs`)、內附表 | `unit-mergeFeatures`、`unit-opt`、`unit-lang`、`api-pwDrift`、`api-lang`、`api-realChromeGuard` |
+| 啟動語系(`getSystemLang`、`opt.lang`、`getPlaywrightInfo().systemLang`) | `unit-lang`、`api-lang`、`api-pwDrift`;既有三檔(`unit-mergeFeatures`、`unit-opt`、`unit-setBrowserTypeForTest`)以 `muteSysLang` 固定環境,須一併跑 |
 | 啟動流程(`_launchCore.mjs`)、環境、版本 | `unit-env`、`unit-setBrowserTypeForTest`、`unit-logonGuard`、`api-pwDrift` |
 | 輸入檢測(`_check.mjs`) | `unit-opt` 及全部 unit |
 | 安裝(`_install.mjs`、`ensureChromium.mjs`) | `unit-ensureChromium`、`api-autoInstall` |

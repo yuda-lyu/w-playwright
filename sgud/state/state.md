@@ -2,7 +2,7 @@
 
 本檔記載當前已開發功能之最新狀態(只記現況、不寫過程;過程見 `sgud/exp/experience.md`).藍圖見 `sgud/rule/rulebook.md`.
 
-- 最近更新:2026-11-21(排程第 440 項:`playwright-core` 升至 1.65.1).版本以 `package.json` 為準;發布與 `dist` 由發布流程產製.
+- 最近更新:2026-11-21(排程第 585 項:啟動預設帶 `--lang=<主機系統語系>`,R-PW-LANG;前一項為第 440 項:`playwright-core` 升至 1.65.1).版本以 `package.json` 為準;發布與 `dist` 由發布流程產製.本輪未改 `package.json` 版本(發布由主控);使用端取得本項須待發布與升版.
 - 依賴:`playwright-core` 精確 `1.65.1`(內建 Chromium 159.0.8154.6、revision 1255);dev `w-package-tools`.不依 wsemi.
 
 ## 功能與帳本條目
@@ -10,6 +10,7 @@
 | 功能 | 帳本 | 狀態 | 測試 |
 |---|---|---|---|
 | 合併(恰一串 `--disable-features`＋守門;legacy 環境變數下之預設 enable 依 `enableLegacyOmit`) | R-PW-MERGE 01～09 | 完成 | `unit-mergeFeatures`、`api-pwDrift`、`api-realChromeGuard` |
+| 啟動語系預設(未給 `--lang` 時補主機系統語系;`opt.lang` 指定或 `false` 關閉;呼叫端 `args` 優先;`getPlaywrightInfo().systemLang`) | R-PW-LANG 01～09 | 完成(headless shell revision 1255 實測;真 Chrome／Edge／完整 Chromium、有頭、非 Windows 未驗) | `unit-lang`、`api-lang`、`api-pwDrift` |
 | 內附表與版本比對 | R-PW-TABLE | 完成(1.65.1;表之變更見帳本) | `api-pwDrift`、`unit-env`、`unit-pkg` |
 | 環境拒絕(PWDEBUG、SELENIUM_REMOTE_URL) | R-PW-ENV | 完成 | `unit-env` |
 | 兩入口同一順序 | R-PW-ORDER | 完成 | `unit-env`、`unit-logonGuard` |
@@ -44,5 +45,6 @@
 - 遷移輪(各使用端改依本套件、移除 w-package-tools-e2e 之 `launchChromium`)未做,依設計 §5、§6 由主控派 M1～M6.
 - 有頭之守門效果未實測(主機不得開可見視窗);首次證據由使用端遷移後之首次全套於守門下取得.
 - 下次 Playwright 升版依 R-PW-TABLE 之流程與〈升版核對清單〉(release notes 不載啟動開關之變動;1.65.1 之 legacy 語意變動即由 `api-pwDrift` 之隔離行程案抓到).
+- 啟動語系:結果隨主機系統語系而變(同 Chromium 156 時代);需跨機器一致者由呼叫端明確給 `lang`／`args`.`api-lang` 之字型案僅在 Windows 且主機語系為 zh-TW 時執行(其餘略過並寫明),「預設 ≠ 關閉」之案於主機語系為 en-US 時略過.真 Chrome／Edge／完整 Chromium 之語系行為未實測.
 - 殘餘(不在保證內):登入守門跨行程之並行啟動不協調;持久設定檔之 `chrome://flags`;企業原則;已驗瀏覽器版本不程式化(以 `api-realChromeGuard` 之輸出為紀錄).
 - 自動啟動時之自動安裝無逾時上限(`ensureChromium({ timeout })` 可先行呼叫).

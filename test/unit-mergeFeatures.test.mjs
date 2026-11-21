@@ -3,10 +3,12 @@ import pwDefaults from '../src/pwDefaults.mjs'
 import wpw from '../src/WPlaywright.mjs'
 import { parseLaunchOpt, mergeParsed, fallbackOptions } from '../src/getChromiumLaunchOptions.mjs'
 import { defDisStr, defEnStr, simulatePwCmdline, findSwitches, effectiveFeatures, guardEffective } from './tools/cmdline.mjs'
+import { muteSysLang } from './tools/sysLang.mjs'
 
 
 //unit-mergeFeatures: 合併演算法(設計§3.1)與失效模式F4~F8、F16~F20之單元測試; 不啟動瀏覽器
 //每條斷言註明對應之設計句
+//語系預設(R-PW-LANG)另由unit-lang驗證; 本檔以muteSysLang令主機系統語系取不到, 使既有斷言(args之完整內容)不隨主機語系而變
 
 
 let g = (opt) => wpw.getChromiumLaunchOptions(opt)
@@ -26,11 +28,14 @@ function assertOneGuardedDisable(out, env = process.env) {
 describe('unit-mergeFeatures', function() {
 
     let saveLegacy
+    let restoreLang
     before(function() {
+        restoreLang = muteSysLang()
         saveLegacy = process.env.PLAYWRIGHT_LEGACY_SCREENSHOT
         delete process.env.PLAYWRIGHT_LEGACY_SCREENSHOT
     })
     after(function() {
+        restoreLang()
         if (saveLegacy === undefined) {
             delete process.env.PLAYWRIGHT_LEGACY_SCREENSHOT
         }

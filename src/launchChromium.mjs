@@ -17,6 +17,7 @@ import { runLaunch } from './_launchCore.mjs'
  * @param {Boolean} [opt.headless=true] 輸入是否無頭(布林), 無效時用預設true; 無頭且未給通道與執行檔時使用headless shell
  * @param {String} [opt.channel] 輸入通道(列舉字串: 'chromium'、'chrome-for-testing'、'chrome'、'chrome-beta'、'chrome-dev'、'chrome-canary'、'msedge'、'msedge-beta'、'msedge-dev'、'msedge-canary'), 無效時視為未給
  * @param {String} [opt.executablePath] 輸入執行檔路徑(非空字串), 無效時視為未給
+ * @param {String|Boolean} [opt.lang] 輸入啟動語系(語系字串如'en-US'、'zh-TW'; 或false表不補--lang), 未給或無效時用主機系統語系(Chromium 159起不再繼承主機語系, 本套件補--lang以恢復; 取不到則不補); args已含--lang者以args為準; 規則見getChromiumLaunchOptions
  * @param {Boolean} [opt.autoInstall=false] 輸入受管瀏覽器缺檔時是否自動安裝一次(布林), 無效時用預設false
  * @param {Boolean} [opt.installDeps=false] 輸入Linux缺系統相依時是否安裝相依一次(布林; 可能需sudo), 無效時用預設false
  * @param {Boolean} [opt.debug=false] 輸入是否提示非預期之輸入(布林)

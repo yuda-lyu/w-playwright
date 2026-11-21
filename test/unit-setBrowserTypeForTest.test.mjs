@@ -4,10 +4,12 @@ import { defDisStr, defEnStr, findSwitches } from './tools/cmdline.mjs'
 import pwDefaults from '../src/pwDefaults.mjs'
 import { pwState } from '../src/_pw.mjs'
 import { cloneOpt, getOverride } from '../src/_launchCore.mjs'
+import { muteSysLang } from './tools/sysLang.mjs'
 
 
 //unit-setBrowserTypeForTest: 測試接縫之介面(F20)與兩入口之接線(替身收到合併後之選項)、錯誤契約(§2.3); 不啟動瀏覽器
 //next()之真啟動於api-pwDrift以headless shell驗證
+//語系預設(R-PW-LANG)之兩入口一致性在unit-lang; 本檔以muteSysLang令主機系統語系取不到, 使既有斷言(args之完整內容與長度)不隨主機語系而變
 
 
 let GUARD = pwDefaults.guardFeatures[0]
@@ -16,11 +18,14 @@ let GUARD = pwDefaults.guardFeatures[0]
 describe('unit-setBrowserTypeForTest', function() {
 
     let saveGuard
+    let restoreLang
     before(function() {
+        restoreLang = muteSysLang()
         saveGuard = process.env.W_PLAYWRIGHT_LOGON_GUARD
         delete process.env.W_PLAYWRIGHT_LOGON_GUARD
     })
     after(function() {
+        restoreLang()
         if (saveGuard !== undefined) {
             process.env.W_PLAYWRIGHT_LOGON_GUARD = saveGuard
         }

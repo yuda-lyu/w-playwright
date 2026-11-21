@@ -5,10 +5,12 @@ import { EventEmitter } from 'events'
 import { parseLaunchOpt } from '../src/getChromiumLaunchOptions.mjs'
 import { ensureChromiumCore } from '../src/ensureChromium.mjs'
 import { parseTimer, isB1, isS1, isO1, ARRAY_MAX, _resetWarned } from '../src/_check.mjs'
+import { muteSysLang } from './tools/sysLang.mjs'
 
 
 //unit-opt: 設計§7輸入宣告表之V24矩陣(對齊dspec輸入參數之檢測機制之同名種類: O1、B1、S1、S2、S3、F1、A3、N2'timer')
 //K3: opt之非預期輸入視為未給、改用預設; opt.debug時以固定詞彙提示(不含值, K9、V20), 同函數同鍵同原因每行程一次
+//opt.lang(語系字串或false; R-PW-LANG 04)之輸入矩陣與提示在unit-lang; 本檔以muteSysLang令主機系統語系取不到, 使既有斷言(args之完整內容)不隨主機語系而變
 
 
 let g = (opt) => wpw.getChromiumLaunchOptions(opt)
@@ -19,6 +21,14 @@ let BOOL_IN = [true, false, 'true', 'false', 'TRUE', 1, 0, '1', 'y', 'n', '', nu
 
 
 describe('unit-opt', function() {
+
+    let restoreLang
+    before(function() {
+        restoreLang = muteSysLang()
+    })
+    after(function() {
+        restoreLang()
+    })
 
     beforeEach(function() {
         _resetWarned()

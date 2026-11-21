@@ -15,7 +15,7 @@ import {
 
 
 //本套件自用之鍵(不轉傳給Playwright)
-let SELF_KEYS = ['debug', 'funLog', 'onTrace', 'autoInstall', 'installDeps']
+let SELF_KEYS = ['debug', 'funLog', 'onTrace', 'autoInstall', 'installDeps', 'lang']
 
 //本套件宣告之鍵(其餘鍵原樣轉傳, V7、V8)
 let DECL_KEYS = [...SELF_KEYS, 'args', 'ignoreDefaultArgs', 'headless', 'channel', 'executablePath', 'ignoreAllDefaultArgs']
@@ -31,6 +31,38 @@ let reItem = /^\*?[A-Za-z0-9_]+(?:[<:][\x21-\x7e]*)?$/
 //功能開關之開關名
 let SW_DISABLE = 'disable-features'
 let SW_ENABLE = 'enable-features'
+
+//語系開關之開關名(同樣以switchName辨識: 去前置-、不分大小寫、取=之前)
+let SW_LANG = 'lang'
+
+//reLang, 語系字串(BCP 47之ASCII子集: 2~3字母之語言碼＋0~n個以-相接之1~8字英數子標籤; 單一語系, 不含逗號、底線、空白), 另限總長35
+let reLang = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/
+let LANG_MAX = 35
+
+
+/**
+ * 是否為合語法之語系字串(opt.lang之字串值與主機系統語系共用同一判準)
+ */
+function isLangStr(v) {
+    return typeof v === 'string' && v.length <= LANG_MAX && reLang.test(v)
+}
+
+
+/**
+ * 取得主機系統語系(Node之Intl.DateTimeFormat().resolvedOptions().locale; 每次呼叫重新取得、不快取); 取不到、拋錯或不合語法回''(不寫死任何語系)
+ *
+ * Chromium 159(revision 1255)起不再繼承主機之系統語系(應用程式語系預設en-US), generic字族隨之改變(sans-serif之拉丁字由微軟正黑體變Arial、中文由微軟正黑體變Microsoft YaHei);
+ * 156(revision 1248)時繼承主機, 故本套件於呼叫端未給--lang時補此值以恢復之
+ */
+function getSystemLang() {
+    try {
+        let v = Intl.DateTimeFormat().resolvedOptions().locale
+        return isLangStr(v) ? v : ''
+    }
+    catch (err) {
+        return ''
+    }
+}
 
 
 /**
@@ -201,6 +233,18 @@ function parseLaunchOpt(opt, fn) {
     st.autoInstall = optB1(st, 'autoInstall', false)
     st.installDeps = optB1(st, 'installDeps', false)
 
+    //lang, 語系字串(合語法者)或false(關閉預設之--lang), 預設未給(取主機系統語系); 其餘視為未給並提示(K3)
+    st.lang = undefined
+    let el = getKey(st, 'lang')
+    if (el.given) {
+        if (el.ok && (el.v === false || isLangStr(el.v))) {
+            st.lang = el.v
+        }
+        else {
+            warnInvalid(st, fn, 'lang', 'a locale string such as \'en-US\' or false', 'the system language')
+        }
+    }
+
     //args, A3(元素規則於合併時判定), 預設[]
     let ea = getKey(st, 'args')
     st.argsRaw = []
@@ -304,6 +348,20 @@ function mergeParsed(st, env = process.env, tb = pwDefaults) {
         warnInvalid(st, fn, 'args', 'an array of valid switch strings', '[]')
     }
 
+    //第3b步: --lang(R-PW-LANG): 呼叫端args已有lang開關者原樣保留、不補(opt.lang為字串時提示不採用); 否則依opt.lang補(false關閉; 字串即用之; 未給取主機系統語系, 取不到不補)
+    let langSw = ''
+    if (other.some((a) => switchName(a) === SW_LANG)) {
+        if (typeof st.lang === 'string') {
+            warn(st, fn, 'lang', 'opt.lang is ignored because args already contains a --lang switch')
+        }
+    }
+    else if (st.lang !== false) {
+        let v = typeof st.lang === 'string' ? st.lang : getSystemLang()
+        if (v !== '') {
+            langSw = '--' + SW_LANG + '=' + v
+        }
+    }
+
     //預設串
     let defDisStr = '--disable-features=' + tb.disableFeatures.join(',')
     let defEnList = getDefaultEnableFeatures(env, tb)
@@ -371,8 +429,11 @@ function mergeParsed(st, env = process.env, tb = pwDefaults) {
         }
     }
 
-    //第8步: args＝呼叫端其餘args(原序)＋〔enable〕＋disable(恆為最後一個元素)
+    //第8步: args＝呼叫端其餘args(原序)＋〔lang〕＋〔enable〕＋disable(恆為最後一個元素)
     let args = [...other]
+    if (langSw !== '') {
+        args.push(langSw)
+    }
     if (addEn) {
         args.push(enStr)
     }
@@ -428,7 +489,11 @@ function fallbackOptions() {
  * args任一元素無效(非字串、頭尾空白〔含NEL〕、非-開頭、--、single-argument、控制字元〔C0、DEL、C1〕、功能項非ASCII語法、元素數逾10000)即整個args視為[](守門照加, 呼叫端其餘參數一併捨棄)
  * 輸出恆含channel、executablePath鍵(未給時為undefined, 以蓋過Playwright之全域預設啟動選項)
  *
- * 依呼叫時之環境變數PLAYWRIGHT_LEGACY_SCREENSHOT決定Playwright預設之enable, 故非純函數
+ * 語系: Chromium 159起不再繼承主機系統語系(應用程式語系預設en-US, generic字族之字型與行高隨之改變), 故呼叫端之args未含--lang時,
+ * 命令列補恰一個--lang=<opt.lang之字串, 未給則為主機系統語系(Intl.DateTimeFormat().resolvedOptions().locale)>, 置於呼叫端其餘args之後、enable與合併disable之前;
+ * 取不到系統語系時不補; args已含--lang(任何寫法)者原樣保留、不補; opt.lang為false時不補; 與Playwright之context選項locale無關(locale只改navigator.language, 不改字型)
+ *
+ * 依呼叫時之環境變數PLAYWRIGHT_LEGACY_SCREENSHOT決定Playwright預設之enable, 並依呼叫時之主機系統語系決定--lang, 故非純函數
  *
  * @param {Object} [opt={}] 輸入設定物件(一般物件; 其他型別視為未給), 為chromium.launch之選項加上本套件自用鍵
  * @param {Array} [opt.args=[]] 輸入瀏覽器參數陣列(選項陣列, 元素為以-開頭之開關字串), 無效時視為[]
@@ -436,9 +501,10 @@ function fallbackOptions() {
  * @param {Boolean} [opt.headless=true] 輸入是否無頭(布林), 無效時用預設true
  * @param {String} [opt.channel] 輸入通道(列舉字串: 'chromium'、'chrome-for-testing'、'chrome'、'chrome-beta'、'chrome-dev'、'chrome-canary'、'msedge'、'msedge-beta'、'msedge-dev'、'msedge-canary'), 無效時視為未給
  * @param {String} [opt.executablePath] 輸入執行檔路徑(非空字串), 無效時視為未給
+ * @param {String|Boolean} [opt.lang] 輸入啟動語系(語系字串如'en-US'、'zh-TW', 為2~3字母之語言碼加以-相接之子標籤, 總長至多35; 或false表不補--lang), 未給或無效時用主機系統語系(取不到則不補), 無效時視為未給; args已含--lang者以args為準
  * @param {Boolean} [opt.debug=false] 輸入是否提示非預期之輸入(布林)
  * @param {Function} [opt.funLog] 輸入提示出口函數(label, safe, detail), 未給時提示走console.warn
- * @returns {Object} 回傳合併後之新物件(不含autoInstall、installDeps、debug、funLog、onTrace、ignoreAllDefaultArgs與__testHook*鍵)
+ * @returns {Object} 回傳合併後之新物件(不含autoInstall、installDeps、lang、debug、funLog、onTrace、ignoreAllDefaultArgs與__testHook*鍵)
  * @example
  *
  * import wpw from 'w-playwright'
@@ -446,6 +512,10 @@ function fallbackOptions() {
  * let o = wpw.getChromiumLaunchOptions({ args: ['--disable-features=Translate', '--lang=en-US'] })
  * console.log(o.args)
  * // => ['--lang=en-US', '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,...,AutofillAiWalletPrivatePasses']
+ *
+ * let o2 = wpw.getChromiumLaunchOptions({ lang: 'ja-JP' })
+ * console.log(o2.args)
+ * // => ['--lang=ja-JP', '--disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,...,AutofillAiWalletPrivatePasses']
  *
  */
 function getChromiumLaunchOptions(opt) {
@@ -463,6 +533,8 @@ export default getChromiumLaunchOptions
 export {
     SELF_KEYS,
     switchName,
+    isLangStr,
+    getSystemLang,
     isFeatureSwitch,
     featureName,
     splitItems,

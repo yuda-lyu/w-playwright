@@ -42,6 +42,24 @@ describe('api-pwDrift', function() {
         assert.ok(args.indexOf('--lang=en-US') >= 0)
     })
 
+    it('語系預設(R-PW-LANG; 真命令列): 未給 → 恰一個--lang=<子行程之主機系統語系>; 呼叫端args有--lang → 原樣、恰一個; opt.lang字串 → 之; opt.lang:false → 無; 基準(未合併)無--lang', function() {
+        let host = r.hostLang
+        //前提: 子行程之主機系統語系合語法(否則「補」與「不補」無從區分)
+        assert.ok(/^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$/.test(host), host)
+        //基準: Playwright本身不帶--lang(升版若改為自帶, 本案轉紅, 合併規則須重議)
+        assert.strict.deepStrictEqual(findSwitches(r.baseline, 'lang'), [])
+        assert.strict.deepStrictEqual(findSwitches(r.langCases.default.args, 'lang'), ['--lang=' + host])
+        assert.strict.deepStrictEqual(findSwitches(r.langCases.caller.args, 'lang'), ['--lang=en-US'])
+        assert.strict.deepStrictEqual(findSwitches(r.langCases.opt.args, 'lang'), ['--lang=ja-JP'])
+        assert.strict.deepStrictEqual(findSwitches(r.langCases.off.args, 'lang'), [])
+        //不破壞守門: 各案命令列之disable皆恰一串且守門生效
+        for (let k of Object.keys(r.langCases)) {
+            let a = r.langCases[k].args
+            assert.strict.deepStrictEqual(findSwitches(a, 'disable-features').length, 1, k)
+            assert.strict.deepStrictEqual(guardEffective(effectiveFeatures(a, 'disable-features')), true, k)
+        }
+    })
+
     it('Playwright全域預設啟動選項之executablePath不蓋過本套件之選項(仍起headless shell)', function() {
         assert.strict.deepStrictEqual(r.defaultsCase.error, undefined, JSON.stringify(r.defaultsCase))
         assert.ok(r.defaultsCase.line.startsWith(r.shellExe), r.defaultsCase.line.slice(0, 120))
@@ -95,6 +113,8 @@ describe('api-pwDrift', function() {
                 assert.ok(i >= 0 && i < iDis, `${tag} ${d}`)
             }
             assert.ok(findSwitches(m.args, 'enable-features').length <= 1, tag)
+            //R-PW-LANG: 16格(含持久啟動)之真命令列皆恰一個--lang=<主機系統語系>
+            assert.strict.deepStrictEqual(findSwitches(m.args, 'lang'), ['--lang=' + r.hostLang], tag)
             assert.strict.deepStrictEqual(m.args.indexOf('--headless') >= 0, m.headless, tag)
         }
     })
@@ -107,6 +127,8 @@ describe('api-pwDrift', function() {
             let dis = findSwitches(args, 'disable-features')
             assert.strict.deepStrictEqual(dis.length, 1, w.fn)
             assert.strict.deepStrictEqual(guardEffective(effectiveFeatures(args, 'disable-features')), true, w.fn)
+            //R-PW-LANG(兩入口一致、真命令列): 預設啟動之命令列恰一個--lang=<主機系統語系>
+            assert.strict.deepStrictEqual(findSwitches(args, 'lang'), ['--lang=' + r.hostLang], w.fn)
         }
         assert.strict.deepStrictEqual(r.wiring[0].width, 120)
     })
@@ -124,6 +146,8 @@ describe('api-pwDrift', function() {
             if (extra) {
                 assert.strict.deepStrictEqual(set.has(extra), true)
             }
+            //R-PW-LANG: next()與next(o)(重走完整流程)之真命令列皆恰一個--lang=<主機系統語系>
+            assert.strict.deepStrictEqual(findSwitches(args, 'lang'), ['--lang=' + r.hostLang])
         }
     })
 
