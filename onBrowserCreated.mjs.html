@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>onBrowserCreated.mjs - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#INSTALL_BUDGET_MS">INSTALL_BUDGET_MS</a></li><li><a href="global.html#LAUNCH_HOOK_TIMEOUT_MS">LAUNCH_HOOK_TIMEOUT_MS</a></li><li><a href="global.html#WPlaywright">WPlaywright</a></li><li><a href="global.html#_resetWarned">_resetWarned</a></li><li><a href="global.html#browserKindOf">browserKindOf</a></li><li><a href="global.html#budgetLeft">budgetLeft</a></li><li><a href="global.html#callFunLog">callFunLog</a></li><li><a href="global.html#callReal">callReal</a></li><li><a href="global.html#callTrace">callTrace</a></li><li><a href="global.html#checkEnv">checkEnv</a></li><li><a href="global.html#checkLogonGuard">checkLogonGuard</a></li><li><a href="global.html#cloneOpt">cloneOpt</a></li><li><a href="global.html#closeQuietly">closeQuietly</a></li><li><a href="global.html#dedupe">dedupe</a></li><li><a href="global.html#deepFreeze">deepFreeze</a></li><li><a href="global.html#ensureChromium">ensureChromium</a></li><li><a href="global.html#ensureChromiumCore">ensureChromiumCore</a></li><li><a href="global.html#errMsg">errMsg</a></li><li><a href="global.html#fallbackOptions">fallbackOptions</a></li><li><a href="global.html#featureName">featureName</a></li><li><a href="global.html#finalGate">finalGate</a></li><li><a href="global.html#findChromeCore">findChromeCore</a></li><li><a href="global.html#findSystemChrome">findSystemChrome</a></li><li><a href="global.html#getChromiumLaunchOptions">getChromiumLaunchOptions</a></li><li><a href="global.html#getCscriptPath">getCscriptPath</a></li><li><a href="global.html#getDefaultEnableFeatures">getDefaultEnableFeatures</a></li><li><a href="global.html#getEnvLikePw">getEnvLikePw</a></li><li><a href="global.html#getHooks">getHooks</a></li><li><a href="global.html#getInstallArgs">getInstallArgs</a></li><li><a href="global.html#getInstallEnv">getInstallEnv</a></li><li><a href="global.html#getKey">getKey</a></li><li><a href="global.html#getManagedShellPath">getManagedShellPath</a></li><li><a href="global.html#getOverride">getOverride</a></li><li><a href="global.html#getPlaywrightInfo">getPlaywrightInfo</a></li><li><a href="global.html#getPrefixes">getPrefixes</a></li><li><a href="global.html#getPwDebugMode">getPwDebugMode</a></li><li><a href="global.html#getPwRegistryDirectory">getPwRegistryDirectory</a></li><li><a href="global.html#getSystemLang">getSystemLang</a></li><li><a href="global.html#getWsfPath">getWsfPath</a></li><li><a href="global.html#isB1">isB1</a></li><li><a href="global.html#isF1">isF1</a></li><li><a href="global.html#isFeatureSwitch">isFeatureSwitch</a></li><li><a href="global.html#isFile">isFile</a></li><li><a href="global.html#isInspectorValue">isInspectorValue</a></li><li><a href="global.html#isLangStr">isLangStr</a></li><li><a href="global.html#isLocalAccount">isLocalAccount</a></li><li><a href="global.html#isLogonGuardOn">isLogonGuardOn</a></li><li><a href="global.html#isManaged">isManaged</a></li><li><a href="global.html#isO1">isO1</a></li><li><a href="global.html#isOwnErr">isOwnErr</a></li><li><a href="global.html#isS1">isS1</a></li><li><a href="global.html#isS2">isS2</a></li><li><a href="global.html#isS3">isS3</a></li><li><a href="global.html#isTableMatch">isTableMatch</a></li><li><a href="global.html#isValidArg">isValidArg</a></li><li><a href="global.html#killTree">killTree</a></li><li><a href="global.html#launchChromium">launchChromium</a></li><li><a href="global.html#launchChromiumPersistent">launchChromiumPersistent</a></li><li><a href="global.html#launchWithInstall">launchWithInstall</a></li><li><a href="global.html#legacyOf">legacyOf</a></li><li><a href="global.html#makeErr">makeErr</a></li><li><a href="global.html#managedKind">managedKind</a></li><li><a href="global.html#mergeParsed">mergeParsed</a></li><li><a href="global.html#normPath">normPath</a></li><li><a href="global.html#onBrowserCreated">onBrowserCreated</a></li><li><a href="global.html#optB1">optB1</a></li><li><a href="global.html#optS1">optS1</a></li><li><a href="global.html#optS3">optS3</a></li><li><a href="global.html#optTimer">optTimer</a></li><li><a href="global.html#parseCommon">parseCommon</a></li><li><a href="global.html#parseLaunchOpt">parseLaunchOpt</a></li><li><a href="global.html#parseOutput">parseOutput</a></li><li><a href="global.html#parseTimer">parseTimer</a></li><li><a href="global.html#prepare">prepare</a></li><li><a href="global.html#readArray">readArray</a></li><li><a href="global.html#readBadPasswordAttempts">readBadPasswordAttempts</a></li><li><a href="global.html#readVersionDir">readVersionDir</a></li><li><a href="global.html#runInstall">runInstall</a></li><li><a href="global.html#runLaunch">runLaunch</a></li><li><a href="global.html#runLaunchPersistent">runLaunchPersistent</a></li><li><a href="global.html#setBrowserTypeForTest">setBrowserTypeForTest</a></li><li><a href="global.html#snapshotOpt">snapshotOpt</a></li><li><a href="global.html#sortUnique">sortUnique</a></li><li><a href="global.html#splitItems">splitItems</a></li><li><a href="global.html#switchName">switchName</a></li><li><a href="global.html#toLaunchErr">toLaunchErr</a></li><li><a href="global.html#warn">warn</a></li><li><a href="global.html#warnInvalid">warnInvalid</a></li><li><a href="global.html#withHooks">withHooks</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">onBrowserCreated.mjs</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { isF1, makeErr } from './_check.mjs'
+import { pushHook, removeHook } from './_launchCore.mjs'
+
+
+/**
+ * 註冊「瀏覽器建立後」之鉤子(可疊放), 回傳還原函數; 使用端以一行掛上, 不必各自包裝launch
+ *
+ * 鉤子於launchChromium／launchChromiumPersistent成功取得瀏覽器之後、回傳給呼叫端之前被呼叫(每次啟動各一次):
+ * - hook(target, info): 可為async; target為最終回傳給呼叫端之物件(launchChromium為Browser、launchChromiumPersistent為持久之BrowserContext);
+ *   info為凍結物件{ fn, kind }(fn為入口函數名; kind為'browser'或'persistent'); 回傳值忽略(鉤子就地對target動作, 如掛路由、包裝close; 不能以回傳值取代target)
+ * - 疊放: 多個鉤子依註冊順序串行await(先註冊者先執行, 前一個完成後才執行下一個); 還原函數只移除自己這一份(不論還原順序), 重複呼叫無作用;
+ *   同一函數註冊兩次即呼叫兩次, 各自之還原函數各移除各自那一份
+ * - 與setBrowserTypeForTest正交: setBrowserTypeForTest為「替換」(只有堆疊頂之替身生效), 本函數為「疊放」(全部鉤子皆生效);
+ *   鉤子套在最終回傳者上, 不論來自真BrowserType或替身(含替身內next()之結果), 使用端自設替身時鉤子仍生效
+ * - 只對最終成功者套用一次: autoInstall之「安裝後再啟動」時失敗之嘗試不產生瀏覽器、不呼叫鉤子; 替身內next(o)之內層啟動亦不另外套用(由外層對最終回傳者套一次)
+ * - 失敗: 鉤子拋錯或reject時, 先關閉該瀏覽器(關閉之錯誤吞掉), 後續鉤子不執行, 再以固定詞彙之錯誤reject(code為E_LAUNCH_HOOK, 訊息'browser launch hook failed', 不附原錯誤);
+ *   原錯誤與鉤子序號只交opt.funLog('hook-error', { fn, index, code }, 原錯誤); 已執行之鉤子不回滾(鉤子自負冪等)
+ * - 觀察: opt.onTrace增'browser-hook'(每個鉤子完成後, { fn, index })、'browser-hook-failed'({ fn, index, code })
+ * - 快照: 每次啟動以「呼叫launchChromium／launchChromiumPersistent當下」已註冊者為準(與opt之快照同時); 啟動進行中(含onTrace等回調內)才註冊或還原者不影響該次啟動
+ * - 限制: 鉤子須會完成, 本套件不為鉤子設時限, 失敗時關閉瀏覽器亦無時限(close卡住則啟動不會reject);
+ *   鉤子內不要再呼叫會觸發同一鉤子之啟動(launchChromium、launchChromiumPersistent): 清單為全域, 會遞迴; 需要輔助瀏覽器者於鉤子內以info或旗標略過
+ *
+ * @param {Function} hook 輸入鉤子(函數(target, info)), 不符即同步throw code為E_ARG之Error(工廠類)
+ * @returns {Function} 回傳還原函數
+ * @example
+ *
+ * import wpw from 'w-playwright'
+ *
+ * //於測試之共用處一行掛上(例如以使用端自備之routeBrowser(target)對Browser或持久BrowserContext掛路由), 不論各處如何啟動(含自設setBrowserTypeForTest之替身)皆生效
+ * let seen = []
+ * let restore = wpw.onBrowserCreated(async (target, info) => {
+ *     seen.push(info.kind) //'browser'(launchChromium)或'persistent'(launchChromiumPersistent)
+ *     //await routeBrowser(target) //就地對target設定; 回傳值忽略
+ * })
+ * try {
+ *     let browser = await wpw.launchChromium({ headless: true }) //回傳前已套鉤子
+ *     await browser.close()
+ * }
+ * finally {
+ *     restore()
+ * }
+ *
+ */
+function onBrowserCreated(hook) {
+    if (!isF1(hook)) {
+        throw makeErr('E_ARG', 'invalid hook: must be a function')
+    }
+    //以項目(物件)辨識自己這一份, 同一函數註冊兩次亦各自獨立
+    let entry = Object.freeze({ hook })
+    pushHook(entry)
+    let restored = false
+    return function restore() {
+        if (restored) {
+            return
+        }
+        restored = true
+        removeHook(entry)
+    }
+}
+
+
+export default onBrowserCreated
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Thu Nov 26 2026 02:52:36 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
