@@ -66,24 +66,26 @@
 ### R-PW-OPT 輸入檢測(設計 §7;dspec〈輸入參數之檢測機制〉§7 之 w-playwright 例外)
 
 - 不依 wsemi;`src/_check.mjs` 為最小實作,種類語意對齊 wsemi 同名種類(O1、B1、S1、S2、S3、F1、A3、N2 `'timer'`);`opt.lang`(語系字串或 `false`)見 R-PW-LANG 04,語法判準 `isLangStr` 於 `src/getChromiumLaunchOptions.mjs`.opt 每鍵只讀一次(V11);非預期之值視為未給、改用預設(K3);`opt.debug` 時以固定詞彙提示(不含值,K9、V20;同函數同鍵同原因每行程一次;有 `funLog` 交 `funLog('warn', msg)`,否則 `console.warn`).
-- 測試:`unit-opt`(V24 矩陣、讀次數、撤銷之 Proxy、提示全文).
+- 自用鍵:`debug`、`funLog`、`onTrace`、`autoInstall`、`installDeps`、`installTimeout`(排程第 636 項;N2 `timer`,預設 `INSTALL_BUDGET_MS`,0 不限,無效改預設並提示)、`lang`;皆不轉傳(`SELF_KEYS`).
+- 測試:`unit-opt`(V24 矩陣、讀次數、撤銷之 Proxy、提示全文);`unit-installBudget`(`installTimeout` 之有效／無效矩陣與提示全文).
 
 ### R-PW-ERR 錯誤契約(設計 §2.3;dspec〈診斷輸出與遮罩〉D1 例外、D2、D3)
 
 - Promise 一律 reject 帶 `code` 之 `Error`,訊息固定詞彙(版本號可附),無 `cause`;Playwright 原錯誤只交 `opt.funLog('launch-error', { fn, code }, 原錯誤)`;不自寫遮罩.
-- code 全集:`E_ARG`、`E_ENV`、`E_PW_VERSION`、`E_LOGON_GUARD`、`E_BROWSER_MISSING`、`E_LAUNCH_TIMEOUT`、`E_LAUNCH`、`E_INSTALL`.
-- 測試:`unit-setBrowserTypeForTest`、`unit-env`、`unit-ensureChromium`.
+- code 全集:`E_ARG`、`E_ENV`、`E_PW_VERSION`、`E_LOGON_GUARD`、`E_BROWSER_MISSING`、`E_LAUNCH_TIMEOUT`、`E_LAUNCH`、`E_INSTALL`、`E_LAUNCH_HOOK`(排程第 636 項:`onBrowserCreated` 之鉤子失敗,見 R-PW-HOOK).
+- 測試:`unit-setBrowserTypeForTest`、`unit-env`、`unit-ensureChromium`、`unit-onBrowserCreated`.
 
 ### R-PW-TRACE 觀察回調(dspec〈計時器〉§2;getTrace 單一擁有者之 w-playwright 例外)
 
-- `onTrace` 同步呼叫、不帶接收者、拋錯與 rejection 忽略、事件凍結且只含原始值;未給不組事件.事件:`launch-options`、`env-reject`、`version-reject`、`logon-reject`、`install-start`、`install-done`、`install-fail`.`funLog` 同語意.
+- `onTrace` 同步呼叫、不帶接收者、拋錯與 rejection 忽略、事件凍結且只含原始值;未給不組事件.事件:`launch-options`、`env-reject`、`version-reject`、`logon-reject`、`install-start`、`install-done`、`install-fail`(逾時之 `exitCode` 為 -1)、`browser-hook`、`browser-hook-failed`(後兩者見 R-PW-HOOK).`funLog` 同語意(標籤:`warn`、`launch-error`、`hook-error`、`install-output`、`install-error`).
 - 測試以事件同步(安裝逾時等以 reject 事件為同步點,不以固定等待).
 
 ### R-PW-INSTALL 受管瀏覽器之取得(設計 §4)
 
 - `ensureChromium` 與 `autoInstall` 共用 `src/_install.mjs`:`process.execPath` 執行本套件所依之 `playwright-core/cli.js install --no-remove --only-shell|--no-shell chromium`(Linux 且 `installDeps` 另 `install-deps chromium`);`windowsHide: true`;子行程 `PLAYWRIGHT_BROWSERS_PATH` 固定為載入時 Playwright 之 `registryDirectory`(F22);逾時以 `taskkill /T /F`(Windows)結束子行程樹.
 - `autoInstall`、`installDeps` 預設 false;受管缺檔且未自動安裝 → `E_BROWSER_MISSING`.
-- 測試:`unit-ensureChromium`(注入替身)、`api-autoInstall`(真下載,空 `PLAYWRIGHT_BROWSERS_PATH`).變異 M11、M12.
+- 安裝有整體上限(排程第 636 項,見 R-PW-BUDGET):`autoInstall` 以 `opt.installTimeout`(預設 `INSTALL_BUDGET_MS`)、`ensureChromium` 以 `opt.timeout`(預設 `INSTALL_BUDGET_MS`),明確給 0 才不限.
+- 測試:`unit-ensureChromium`(注入替身)、`api-autoInstall`(真下載,空 `PLAYWRIGHT_BROWSERS_PATH`)、`unit-installBudget`、`api-installBudget`.變異 M11、M12.
 
 ### R-PW-LOGON 執行期登入守門(主控裁示 4)
 
@@ -95,7 +97,46 @@
 ### R-PW-SEAM 測試接縫(設計 §2.2、F20)
 
 - `setBrowserTypeForTest(fake)`:fake 為一般物件且 `launch` 為函數(`launchPersistentContext` 可省,給了須為函數),否則同步 throw `E_ARG`;方法只讀一次並快照,呼叫時以原 fake 為 `this`;替身以堆疊管理(生效者為最後設定且未還原者,還原不必依序);替身收合併後選項(深複本)與 `next`(見 README);替身層不自動安裝(缺檔即 `E_BROWSER_MISSING`);`next` 內之本套件錯誤原樣往外(不重包、不重報 funLog).不對外提供原始 BrowserType.
-- 測試:`unit-setBrowserTypeForTest`;`api-pwDrift`(next 真啟動).變異 M10、M18、M25.
+- **替換，非疊放**:只有堆疊頂之替身被呼叫,其下者不被呼叫(替身內之 `next()` 直達真 BrowserType).需要「各處皆生效、可疊放」之啟動後處理者用 `onBrowserCreated`(R-PW-HOOK),兩者正交.
+- 測試:`unit-setBrowserTypeForTest`;`api-pwDrift`(next 真啟動);`unit-onBrowserCreated` R-PW-HOOK 05(正交,含兩層替身只呼叫頂層).變異 M10、M18、M25.
+
+### R-PW-HOOK 啟動後鉤子(排程第 636 項,2026-11-26;入口 `src/onBrowserCreated.mjs`,唯一實作 `src/_launchCore.mjs` 之 `withHooks`、`getHooks`、`pushHook`、`removeHook`、`closeQuietly`)
+
+- 背景:使用端須對每個啟動出之瀏覽器做同一件事(如掛路由),而 `setBrowserTypeForTest` 為替換非疊放,使用端只能各自在自己之替身內包裝 `launch`;本項提供可疊放之「瀏覽器建立後」鉤子,使用端一行掛上.
+- 名稱與簽章依本庫風格定(草案之 `info.options` 不提供:鉤子無需,且合併後選項含執行檔路徑、代理等,要看另用 `getChromiumLaunchOptions`).
+
+| 條 | 規則 | 測試 |
+|---|---|---|
+| 01 | `onBrowserCreated(hook)`:`hook` 非函數即同步 throw `E_ARG`(`invalid hook: must be a function`,工廠類);回傳還原函數 | `unit-onBrowserCreated` 01;變異 H09 |
+| 02 | **套用點單一包裝**:`runLaunch`、`runLaunchPersistent` 各以唯一之 `return withHooks(go, hs, st, fn, kind)` 結束,涵蓋「真 BrowserType／替身」兩條路徑,共 4 條返回路徑皆經它;`target` 為最終回傳給呼叫端者(`Browser`／持久 `BrowserContext`),`info` 為凍結之 `{ fn, kind: 'browser'\|'persistent' }`;鉤子完成前啟動不 resolve | `unit-onBrowserCreated` 02;`api-onBrowserCreated`(真 launchChromium、真 launchChromiumPersistent 各一,路由效果作用於頁面);變異 H08a～H08e |
+| 03 | **與 `setBrowserTypeForTest` 正交**:自設替身時鉤子仍生效;兩層替身只呼叫頂層(替換)而鉤子只一次(疊放);替身內 `next()`、`next(o)` 皆只套一次(內層 `runLaunch(o2, fn, false)` 之 `useOverride=false` 時 `hs=[]`) | `unit-onBrowserCreated` 05;`api-onBrowserCreated`(真 `next()`／`next(o)`);變異 H06a、H06b |
+| 04 | **只對最終成功者套一次**:`withHooks` 包在 `launchWithInstall` 之外;啟動失敗、安裝失敗不呼叫鉤子;autoInstall 之「安裝後再啟動」失敗之嘗試不產生瀏覽器 | `unit-onBrowserCreated` 06、11;變異 H17 |
+| 05 | **疊放且串行**:全部鉤子依註冊順序逐一 `await`(前一個完成後才開始下一個);鉤子回傳值忽略(不取代 `target`) | `unit-onBrowserCreated` 03、06;`api-onBrowserCreated` 疊放案;變異 H03、H04、H11 |
+| 06 | **失敗**:鉤子拋錯或 reject(含非 Error 值)→ 先 `closeQuietly(target)`(關閉之錯誤吞掉、target 無 `close` 亦可)、**關閉完成後**才以固定詞彙 `E_LAUNCH_HOOK`('browser launch hook failed',無 cause,不附原錯誤)reject;後續鉤子不執行;已執行者不回滾;原錯誤與序號只交 `funLog('hook-error', { fn, index, code }, 原錯誤)` | `unit-onBrowserCreated` 07、08;`api-onBrowserCreated`(真瀏覽器 `isConnected()` 為 false、持久 context 已觸發 `close`);變異 H01、H02、H10、H12、H15 |
+| 07 | **還原**:只移除自己那一份(以項目物件辨識,不論還原順序),重複呼叫無作用;同一函數註冊兩次呼叫兩次、各自還原 | `unit-onBrowserCreated` 04;變異 H07 |
+| 08 | **快照**:每次啟動於**呼叫當下**(`runLaunch`／`runLaunchPersistent` 之首個敘述,先於 `prepare` 之任何 await 與呼叫端回調)取 `getHooks()`(陣列複本);啟動進行中(含 `onTrace` 回調內)才註冊／還原者不影響該次 | `unit-onBrowserCreated` 10、10b;變異 H05、H18 |
+| 09 | **觀察**:每個鉤子完成後 `onTrace({ type: 'browser-hook', fn, index })`,失敗 `browser-hook-failed({ fn, index, code })`;凍結、未給 `onTrace` 不組事件、回調拋錯與 rejection 忽略 | `unit-onBrowserCreated` 09;變異 H14、H16 |
+| 10 | 不為鉤子設時限(鉤子須會完成;失敗時 `closeQuietly` 亦無時限);鉤子內不得再觸發同一鉤子之啟動(清單為全域,會遞迴);`LAUNCH_HOOK_TIMEOUT_MS` 之餘裕涵蓋鉤子之合理耗時 | README、JSDoc(已知限制,無測試) |
+
+- 站點全集與盤點:鉤子之套用只在 `withHooks`;盤點指令 `rg -n "withHooks\(" src`(命中須恰 2 處呼叫＋1 處定義:`runLaunch`、`runLaunchPersistent`)、`rg -n "getHooks\(" src`(須只在這兩處與定義);`launchWithInstall` 內不得出現鉤子(變異 H17).
+- 變異清單(2026-11-26,於鏡像根逐一植入,須皆轉紅):H01 失敗不關閉;H02 失敗後後續鉤子仍執行;H03 倒序;H04 不 await;H05 `getHooks` 不回快照;H06a／b 內層 `next(o)` 亦套;H07 還原移除最後一項;H08a～e 各入口×路徑不套;H09 不檢型別;H10 訊息帶原錯誤;H11 回傳值取代 target;H12 關閉之錯誤不吞;H13 info 不凍結且 kind 恆 browser;H14 不發事件;H15 原錯誤不交 funLog;H16 index 錯位;H17 於 `launchWithInstall` 內套(每次嘗試皆套);H18 快照改於 `prepare` 之後取.
+
+### R-PW-BUDGET 安裝預算與建議時限(排程第 636 項,2026-11-26;常數 `src/installBudget.mjs`,實作 `src/_install.mjs` 之 `budgetLeft`、`src/_launchCore.mjs` 之 `launchWithInstall`、`src/ensureChromium.mjs`)
+
+- 背景:原 `ensureChromium` 之 `opt.timeout` 預設 0(不限)、`autoInstall` 之安裝無任何時限,使用端 `before` 遇首次下載時無可依據之時限.
+
+| 條 | 規則 | 測試 |
+|---|---|---|
+| 01 | `INSTALL_BUDGET_MS`＝15 分鐘:單次安裝之整體上限;`LAUNCH_HOOK_TIMEOUT_MS`＝預算＋`KILL_WAIT_MAX`(10 秒)＋`LAUNCH_TIMEOUT_MS`(180 秒)＋`HOOK_MARGIN_MS`(60 秒)＝1150000;皆為 `src/installBudget.mjs` 之內部常數,主檔屬性只是匯出(改寫屬性不影響實際上限) | `unit-installBudget` 01、13;變異 B04、B08 |
+| 02 | 取值與 Playwright 一致(靜態抽取 `coreBundle.js`,升版時轉紅):啟動逾時預設＝`LAUNCH_TIMEOUT_MS`;安裝目錄鎖退避(retries 20、factor 1.27579)之總和約 469.5 秒＜預算(後到者等候上限) | `unit-installBudget` 02 |
+| 03 | `autoInstall` 之安裝受 `opt.installTimeout`(自用鍵;N2 `timer`,預設 `INSTALL_BUDGET_MS`,明確給 0 才不限)限制:`launchWithInstall` 以 `budgetLeft(budget, t0, now)` 交 `runInstall`;逾時即結束安裝子行程樹並 reject `E_INSTALL`('browser installation timed out',reject 於子行程樹結束之後) | `unit-installBudget` 04、06(假時鐘恰於 15 分鐘逾時、差 1 毫秒仍進行)、07(0 不限);`api-installBudget`(真子行程);變異 B01、B06、B09 |
+| 04 | `ensureChromium` 之 `opt.timeout` 預設改為 `INSTALL_BUDGET_MS`(破壞性);明確給 0 才不限 | `unit-installBudget` 08;變異 B05 |
+| 05 | 同一次呼叫之兩個安裝子行程(受管瀏覽器、Linux 系統相依)共用一個預算:第二個得剩餘毫秒;耗盡者得 1(逾時,而非 0＝不限);`t0` 自第一次安裝起算、不重置 | `unit-installBudget` 03、05、09;變異 B02、B03、B10、B11、B12 |
+| 06 | **並行**:本套件無自己之跨行程鎖,只有 Playwright 之安裝目錄鎖(`registryDirectory/__dirlock`);後到者之等候發生於安裝子行程內,預算計時涵蓋整個子行程 → 後到者之等候已計入同一預算,最壞 1 倍(不乘 2);**有效上限＝「Playwright 鎖之等候上限約 7.8 分鐘」與預算之較小者**(先到者慢線下載逾 7.8 分鐘時後到者先 `E_INSTALL`,不自動重試).實測:持有中之鎖使安裝子行程停在等鎖、預算逾時被結束(`api-installBudget`);已過期之鎖被立即接手;後到者於 Playwright 之等候上限(實測 470.0 秒)後以離開碼 1 結束 | `api-installBudget`(live 與 stale 對照,launch、persistent、ensure 各一;`before` 靜態抽取守住「不下載」保險之前提);探測紀錄見 `sgud/exp/experience.md` 一之四 |
+| 07 | `installTimeout` 為自用鍵:不轉傳給 Playwright;無效值依 K3 視為未給(預設)並以固定詞彙提示(不含值) | `unit-installBudget` 10～12;`unit-mergeFeatures` 第 10 步;變異 B07 |
+
+- 變異清單(2026-11-26,須皆轉紅):B01 安裝不設上限(原缺陷);B02 系統相依安裝拿完整預算;B03 耗盡回 0;B04 預算改 10 分鐘;B05 `ensureChromium` 預設回 0;B06 `installTimeout` 預設 0;B07 `installTimeout` 不列自用鍵;B08 `LAUNCH_HOOK_TIMEOUT_MS` 缺等待項;B09 忽略 `st.installTimeout`;B10 系統相依安裝重新起算;B11 `ensureChromium` 第二個子行程拿完整預算;B12 不限變成 1 毫秒;B14 `budgetLeft` 不夾於預算以內(牆鐘倒退);備援(只跑真子行程測試仍須轉紅):B01b 同 B01、B13 `prepare` 不把 `installTimeout` 放進狀態(接線).
+- 安全(測試不得下載):`api-installBudget` 之子行程一律設 `PLAYWRIGHT_DOWNLOAD_HOST` 與 `PLAYWRIGHT_CHROMIUM_DOWNLOAD_HOST`(後者優先)為本機不可連埠,且指向空的 `PLAYWRIGHT_BROWSERS_PATH`;萬一取得鎖亦只會下載失敗.
 
 ### R-PW-HIDE 子行程隱藏視窗(全域 §8.3)
 
@@ -140,9 +181,11 @@ rg -n --glob '**/package.json' --glob '!**/node_modules/**' "\"playwright(-core)
 |---|---|
 | 合併(`getChromiumLaunchOptions.mjs`)、內附表 | `unit-mergeFeatures`、`unit-opt`、`unit-lang`、`api-pwDrift`、`api-lang`、`api-realChromeGuard` |
 | 啟動語系(`getSystemLang`、`opt.lang`、`getPlaywrightInfo().systemLang`) | `unit-lang`、`api-lang`、`api-pwDrift`;既有三檔(`unit-mergeFeatures`、`unit-opt`、`unit-setBrowserTypeForTest`)以 `muteSysLang` 固定環境,須一併跑 |
-| 啟動流程(`_launchCore.mjs`)、環境、版本 | `unit-env`、`unit-setBrowserTypeForTest`、`unit-logonGuard`、`api-pwDrift` |
+| 啟動流程(`_launchCore.mjs`)、環境、版本 | `unit-env`、`unit-setBrowserTypeForTest`、`unit-logonGuard`、`api-pwDrift`、`unit-onBrowserCreated`、`unit-installBudget` |
+| 啟動後鉤子(`onBrowserCreated.mjs`、`_launchCore.mjs` 之 `withHooks`) | `unit-onBrowserCreated`、`api-onBrowserCreated`(真 headless shell)、`unit-setBrowserTypeForTest`、`unit-pkg` |
 | 輸入檢測(`_check.mjs`) | `unit-opt` 及全部 unit |
-| 安裝(`_install.mjs`、`ensureChromium.mjs`) | `unit-ensureChromium`、`api-autoInstall` |
+| 安裝(`_install.mjs`、`ensureChromium.mjs`) | `unit-ensureChromium`、`api-autoInstall`、`unit-installBudget`、`api-installBudget` |
+| 安裝預算與建議時限(`installBudget.mjs`、`opt.installTimeout`、`getChromiumLaunchOptions.mjs` 之 `SELF_KEYS`) | `unit-installBudget`、`api-installBudget`、`unit-mergeFeatures`、`unit-ensureChromium`、`unit-pkg` |
 | 登入守門(`_logonGuard.mjs`、`readBadPassword.wsf`) | `unit-logonGuard`、`api-realChromeGuard` |
 | 系統 Chrome(`_findChrome.mjs`、`findSystemChrome.mjs`、`getPlaywrightInfo.mjs`) | `unit-findSystemChrome`、`unit-mergeFeatures` F19 |
 | 依賴、匯出、子行程隱藏 | `unit-pkg` |
@@ -153,3 +196,4 @@ rg -n --glob '**/package.json' --glob '!**/node_modules/**' "\"playwright(-core)
 ## 四、破壞性變更紀錄
 
 - 1.0.0(新建):取代 w-package-tools-e2e 之 `launchChromium`／`launchChromiumCore`(由遷移輪移除;原則 14 不留相容層).
+- 排程第 636 項(2026-11-26,未發布;版本由主控):①`ensureChromium` 之 `opt.timeout` 預設由 0(不限)改為 `INSTALL_BUDGET_MS`(15 分鐘),明確給 0 才不限;②`autoInstall` 之安裝由無時限改為受 `opt.installTimeout`(預設 15 分鐘)限制,逾時 `E_INSTALL`;③新增 `opt.installTimeout`(自用鍵,不轉傳;原先若有人給此鍵會被當未宣告之鍵原樣轉傳給 Playwright);④新增 `E_LAUNCH_HOOK`、`onBrowserCreated`、常數 `INSTALL_BUDGET_MS`、`LAUNCH_HOOK_TIMEOUT_MS`;主檔 default 匯出由 7 個函數增為 8 個函數＋2 個常數(`unit-pkg` 已改).自有套件不做向後相容.

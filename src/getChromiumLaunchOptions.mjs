@@ -10,12 +10,14 @@ import {
     getKey,
     optB1,
     optS1,
-    optS3
+    optS3,
+    optTimer
 } from './_check.mjs'
+import { INSTALL_BUDGET_MS } from './installBudget.mjs'
 
 
 //本套件自用之鍵(不轉傳給Playwright)
-let SELF_KEYS = ['debug', 'funLog', 'onTrace', 'autoInstall', 'installDeps', 'lang']
+let SELF_KEYS = ['debug', 'funLog', 'onTrace', 'autoInstall', 'installDeps', 'installTimeout', 'lang']
 
 //本套件宣告之鍵(其餘鍵原樣轉傳, V7、V8)
 let DECL_KEYS = [...SELF_KEYS, 'args', 'ignoreDefaultArgs', 'headless', 'channel', 'executablePath', 'ignoreAllDefaultArgs']
@@ -232,6 +234,9 @@ function parseLaunchOpt(opt, fn) {
     //autoInstall, installDeps, B1, 預設false
     st.autoInstall = optB1(st, 'autoInstall', false)
     st.installDeps = optB1(st, 'installDeps', false)
+
+    //installTimeout, N2範圍子型'timer'(0表不限), 預設INSTALL_BUDGET_MS: autoInstall之整體安裝上限(受管瀏覽器與系統相依共用)
+    st.installTimeout = optTimer(st, 'installTimeout', INSTALL_BUDGET_MS)
 
     //lang, 語系字串(合語法者)或false(關閉預設之--lang), 預設未給(取主機系統語系); 其餘視為未給並提示(K3)
     st.lang = undefined
@@ -504,7 +509,7 @@ function fallbackOptions() {
  * @param {String|Boolean} [opt.lang] 輸入啟動語系(語系字串如'en-US'、'zh-TW', 為2~3字母之語言碼加以-相接之子標籤, 總長至多35; 或false表不補--lang), 未給或無效時用主機系統語系(取不到則不補), 無效時視為未給; args已含--lang者以args為準
  * @param {Boolean} [opt.debug=false] 輸入是否提示非預期之輸入(布林)
  * @param {Function} [opt.funLog] 輸入提示出口函數(label, safe, detail), 未給時提示走console.warn
- * @returns {Object} 回傳合併後之新物件(不含autoInstall、installDeps、lang、debug、funLog、onTrace、ignoreAllDefaultArgs與__testHook*鍵)
+ * @returns {Object} 回傳合併後之新物件(不含autoInstall、installDeps、installTimeout、lang、debug、funLog、onTrace、ignoreAllDefaultArgs與__testHook*鍵)
  * @example
  *
  * import wpw from 'w-playwright'

@@ -37,6 +37,19 @@
 6. **`api-pwDrift` 之真命令列**:Playwright 1.65.1 本身不帶 `--lang`(基準命令列無 lang 開關,已加斷言;升版若自帶即轉紅,合併規則須重議);「呼叫端優先」做成**不補**(全命令列之 lang 開關即呼叫端所給者),不依賴 Chromium 對重複同名開關之取捨(未驗證).
 7. **eslint 兩點**:`no-lone-blocks`(區塊內無 `let` 宣告即為多餘)、`no-mixed-operators`(`a && b || c && d` 須加括號).
 
+## 一之四、安裝預算與啟動後鉤子(排程第 636 項,2026-11-26)
+
+1. **安裝之並行只靠 Playwright 之安裝目錄鎖**(本套件無跨行程鎖;讀碼 `lib/coreBundle.js` `registry.install`):`lock(registryDirectory, { retries: { retries: 20, factor: 1.27579 }, lockfilePath: '<瀏覽器目錄>/__dirlock' })`,`retry` 套件預設 `minTimeout` 1000、不隨機 → 退避總和 **469.5 秒**(以其 `retry.timeouts` 計得;最後一次等 102 秒);鎖 `stale` 預設 10 秒(修改時間早於「現在－10 秒」即殘留、可接手).**實測**(2026-11-26,空的 `PLAYWRIGHT_BROWSERS_PATH`＋自放 `__dirlock`):①鎖之修改時間設一小時後(持有中)→ 安裝子行程停在等鎖,逾預算被結束(`E_INSTALL` timed out);②設一小時前(殘留)→ 立即接手(約 1.7 秒進入下載);③持有中之鎖不放、預算給 15 分鐘 → 後到者於 **470.0 秒**後以離開碼 1 結束(`E_INSTALL`,`failed with exit code 1`),與 469.5 秒之計算相符.
+2. **等鎖發生於安裝子行程之內**,預算計時涵蓋整個子行程 → 後到者之等候已計入同一預算,並行最壞為 1 倍(與 wsemi 之取得預算「先等他方、他方失敗才自行取得而最壞約 2 倍」不同:那邊等候與自行下載是兩段各自計時;本處是同一個子行程之一段計時).
+3. **模擬「他方持有鎖」不必持續 touch**:`fs.utimesSync` 把 `__dirlock` 之修改時間設在未來即永不過期(`isLockStale` 以 `mtime < now - stale` 判);設過去即殘留.
+4. **測試不得下載之保險**:`PLAYWRIGHT_CHROMIUM_DOWNLOAD_HOST` **優先於** `PLAYWRIGHT_DOWNLOAD_HOST`(`coreBundle.js` 之 `customHostOverride`),且設了即**取代**全部鏡像;故測試須兩者皆設為本機不可連之埠(`http://127.0.0.1:9`),才不受使用者環境之鏡像設定影響;萬一取得鎖亦只會下載失敗(離開碼 1).
+5. **Playwright 之啟動逾時預設為 3 分鐘**(`DEFAULT_PLAYWRIGHT_LAUNCH_TIMEOUT = 3 * 60 * 1e3`,不是 30 秒;`utils` 未匯出,只能靜態抽取比對);缺檔與缺系統相依之前置啟動即敗(讀碼:`executablePathOrDie` 與 `reMissing`／`reDeps` 之即時失敗;缺檔於本機之真啟動實證為秒內,缺系統相依僅 Linux 而本機未實測),逾時不重試,故單次 `autoInstall` 啟動之最壞＝預算＋結束子行程樹等待(10 秒)＋一次啟動逾時(3 分鐘)＋餘裕,即 `LAUNCH_HOOK_TIMEOUT_MS`(1150000).
+6. **取值之依據**:15 分鐘＝本機實測目錄大小(Windows:headless shell 約 288 MiB〔約 302 MB〕、完整 Chromium 約 452 MiB〔約 474 MB〕,zip 不大於此)以 0.6 MB/s 下載最大者約 790 秒(13.2 分鐘)＋解壓、校驗與系統相依餘裕約 1.8 分鐘.不實測下載時間(不得下載).**並行時後到者之有效上限為「Playwright 鎖之等候上限約 7.8 分鐘與預算之較小者」**(複審指出:推導之慢線下載 790 秒大於 469.5 秒,故慢線並行時後到者必先失敗;已於 README 與 JSDoc 明示,列為待裁示之可選改進:對 ELOCKED 於預算內自動重試).
+7. **假時鐘驗逾時(`node:test` 之 `mock.timers`)**:只模擬 `setTimeout`(`enable({ apis: ['setTimeout'] })`),以 `setImmediate` 讓出事件迴圈(不受影響);等被測物之事件(`install-start`)後再 `tick(預算 - 1)` 斷言仍進行、`tick(1)` 斷言觸發結束子行程樹、再 `tick(30)`(替身 taskkill 之結束)後才 reject.替身子行程移至 `test/tools/fakeSpawn.mjs`(同一 helper 只定義一次),並回各子行程替身(`cps`)供收尾.`afterEach` 須 `mock.timers.reset()`.
+8. **真瀏覽器測試之失敗路徑須先登記待關閉**:`assert.rejects(wpw.launchChromium(...))` 若預期 reject 卻 resolve,該 Browser 無人關閉,mocha 不退出(行程懸置);植入變異時即因此卡住 10 分鐘.作法:啟動後立即登記(`launchTracked`),`afterEach` 一律關閉;變異跑器用 `mocha --exit` 並限制單檔逾時.
+9. **鉤子套在 `launchWithInstall` 之外**(`withHooks`):使「安裝後再啟動」之失敗嘗試不產生瀏覽器、不呼叫鉤子,自然只對最終成功者套一次;巢狀之 `next(o)` 以 `useOverride=false` 辨識內層而不套(外層對最終回傳者套一次).變異 H17(每次嘗試皆套)由測試抓到.
+10. **`withHooks` 須於呼叫當下同步呼叫 `run()`**:登入守門與最後檢查之「檢查至呼叫 BrowserType 之間不再執行任何呼叫端回調」依賴 `launchWithInstall` 之同步進入;`await run()` 為其首個敘述,保留該性質(`unit-env`、`unit-setBrowserTypeForTest` 之回調改環境案全綠為證).
+
 ## 二、測試與驗證
 
 1. **真瀏覽器之守門驗證**:讀 `chrome://version` 之「指令列變化版本」(`#variations-cmd-section` 內之 base64 JSON,為生效之覆寫);headless shell 無此頁(`net::ERR_INVALID_URL`),只能驗命令列.錯誤次數於啟動時即增加,關閉後以 1 秒間隔讀 8 次作否定斷言之觀察窗.

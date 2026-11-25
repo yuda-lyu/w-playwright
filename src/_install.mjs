@@ -43,6 +43,22 @@ let KILL_WAIT_MAX = 10000
 
 
 /**
+ * 整體預算之剩餘毫秒(同一預算分次花用時用: 如先安裝瀏覽器、再安裝系統相依, 兩者共用一個上限)
+ *
+ * @param {Number} total 輸入整體預算毫秒, 0(或以下)表不限(回0, 即runInstall之不限)
+ * @param {Number} t0 輸入預算起算之時刻(毫秒)
+ * @param {Function} [now=Date.now] 輸入取現在時刻之函數(內部: 測試注入)
+ * @returns {Number} 回傳剩餘毫秒(至少1, 使已耗盡者於下一個計時即逾時, 不變成「不限」; 至多total, 牆鐘倒退時不超過整體預算); 不限時回0
+ */
+function budgetLeft(total, t0, now = Date.now) {
+    if (!(total > 0)) {
+        return 0
+    }
+    return Math.min(total, Math.max(1, total - (now() - t0)))
+}
+
+
+/**
  * 結束子行程樹並等待其完成(Windows以taskkill /T /F並等其結束; 其餘以行程群組SIGKILL, 子行程以detached起而為群組之首); 永不reject
  */
 function killTree(cp, platform, sp, kill) {
@@ -199,7 +215,9 @@ function runInstall(kind, st, timeout = 0, deps = {}) {
 
 
 export {
+    KILL_WAIT_MAX,
     getInstallArgs,
     getInstallEnv,
+    budgetLeft,
     runInstall
 }

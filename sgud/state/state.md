@@ -2,7 +2,8 @@
 
 本檔記載當前已開發功能之最新狀態(只記現況、不寫過程;過程見 `sgud/exp/experience.md`).藍圖見 `sgud/rule/rulebook.md`.
 
-- 最近更新:2026-11-21(排程第 585 項:啟動預設帶 `--lang=<主機系統語系>`,R-PW-LANG;前一項為第 440 項:`playwright-core` 升至 1.65.1).版本以 `package.json` 為準;發布與 `dist` 由發布流程產製.本輪未改 `package.json` 版本(發布由主控);使用端取得本項須待發布與升版.
+- 最近更新:2026-11-26(排程第 636 項:新增可疊放之啟動後鉤子 `onBrowserCreated`〔R-PW-HOOK〕、安裝整體上限與常數 `INSTALL_BUDGET_MS`／`LAUNCH_HOOK_TIMEOUT_MS`〔R-PW-BUDGET〕;前一項為第 585 項:啟動預設帶 `--lang=<主機系統語系>`,R-PW-LANG;再前為第 440 項:`playwright-core` 升至 1.65.1).版本以 `package.json` 為準;發布與 `dist` 由發布流程產製.本輪未改 `package.json` 版本(發布由主控);使用端取得本項須待發布與升版.
+- 最近一次驗證(2026-11-26,第 636 項):本庫根與 `npm pack` 發布包解開之目錄之全套各 277 passing、0 failing、0 pending(`api-autoInstall` 之 3 個會真下載之案未跑〔不得實際下載瀏覽器〕,其無下載之案 1/1 綠);eslint 0 問題;private-guard CLEAN;變異 39 個全擊殺(清單見帳本).
 - 依賴:`playwright-core` 精確 `1.65.1`(內建 Chromium 159.0.8154.6、revision 1255);dev `w-package-tools`.不依 wsemi.
 
 ## 功能與帳本條目
@@ -19,7 +20,9 @@
 | onTrace／funLog | R-PW-TRACE | 完成 | 各 unit |
 | 受管瀏覽器之取得 | R-PW-INSTALL | 完成 | `unit-ensureChromium`、`api-autoInstall` |
 | 執行期登入守門 | R-PW-LOGON | 完成 | `unit-logonGuard`、`api-realChromeGuard`(子行程開啟) |
-| 測試接縫 | R-PW-SEAM | 完成 | `unit-setBrowserTypeForTest`、`api-pwDrift` |
+| 測試接縫(替換,非疊放) | R-PW-SEAM | 完成 | `unit-setBrowserTypeForTest`、`api-pwDrift` |
+| 啟動後鉤子 `onBrowserCreated`(可疊放;兩入口×真／替身 4 條路徑單一包裝 `withHooks`;與 `setBrowserTypeForTest` 正交;失敗先關閉再 `E_LAUNCH_HOOK`;`onTrace` 增 `browser-hook`／`browser-hook-failed`) | R-PW-HOOK 01～10 | 完成(真 headless shell 驗證;變異 H01～H18 皆轉紅;**使用端尚未改用**,由主控另派) | `unit-onBrowserCreated`、`api-onBrowserCreated` |
+| 安裝預算(`INSTALL_BUDGET_MS`＝15 分鐘為 `autoInstall`／`ensureChromium` 之實際預設上限;`opt.installTimeout`;兩個安裝子行程共用;並行之等候計入;`LAUNCH_HOOK_TIMEOUT_MS`＝1150000) | R-PW-BUDGET 01～07 | 完成(假時鐘驗恰於預算逾時;真安裝子行程以「持有中之鎖」驗上限、不下載;變異 B01～B14 與備援 B01b、B13 皆轉紅) | `unit-installBudget`、`api-installBudget` |
 | 子行程隱藏視窗 | R-PW-HIDE | 完成(3 處) | `unit-pkg` |
 | 不依 wsemi | R-PW-NOWSEMI | 完成 | `unit-pkg` |
 | 真瀏覽器守門驗證 | R-PW-REAL | 完成(見下表) | `api-realChromeGuard`(常駐)、`test/tools/guardProbe.mjs`(一次性) |
@@ -47,4 +50,5 @@
 - 下次 Playwright 升版依 R-PW-TABLE 之流程與〈升版核對清單〉(release notes 不載啟動開關之變動;1.65.1 之 legacy 語意變動即由 `api-pwDrift` 之隔離行程案抓到).
 - 啟動語系:結果隨主機系統語系而變(同 Chromium 156 時代);需跨機器一致者由呼叫端明確給 `lang`／`args`.`api-lang` 之字型案僅在 Windows 且主機語系為 zh-TW 時執行(其餘略過並寫明),「預設 ≠ 關閉」之案於主機語系為 en-US 時略過.真 Chrome／Edge／完整 Chromium 之語系行為未實測.
 - 殘餘(不在保證內):登入守門跨行程之並行啟動不協調;持久設定檔之 `chrome://flags`;企業原則;已驗瀏覽器版本不程式化(以 `api-realChromeGuard` 之輸出為紀錄).
-- 自動啟動時之自動安裝無逾時上限(`ensureChromium({ timeout })` 可先行呼叫).
+- 安裝上限(15 分鐘,第 636 項起)之取值依本機目錄大小估算,未實測下載時間(不得下載);並行之後到者之有效上限為「Playwright 安裝目錄鎖之等候上限約 7.8 分鐘(實測 470 秒)與預算之較小者」:先到者慢線下載逾此時後到者以 `E_INSTALL` 失敗,不自動重試(使用端可重跑;對 ELOCKED 於預算內自動重試為可選改進,待裁示).
+- 使用端改用鉤子(以 `wpw.onBrowserCreated(...)` 取代各自包 `launch`)、使用端 `before` 掛 `LAUNCH_HOOK_TIMEOUT_MS`:由主控於本項發布後另派.

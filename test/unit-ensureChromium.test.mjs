@@ -1,12 +1,12 @@
 import path from 'path'
 import assert from 'assert'
-import { EventEmitter } from 'events'
 import { launchWithInstall, callReal } from '../src/_launchCore.mjs'
 import { logonState } from '../src/_logonGuard.mjs'
 import { ensureChromiumCore } from '../src/ensureChromium.mjs'
 import { runInstall } from '../src/_install.mjs'
 import { registryDirectoryAtLoad, cliPath } from '../src/_pw.mjs'
 import { runChild, cleanEnv } from './tools/runChild.mjs'
+import { fakeSpawn } from './tools/fakeSpawn.mjs'
 
 
 //unit-ensureChromium: 安裝流程(自 w-package-tools-e2e test/unit-launchChromiumCore.test.mjs 移入並擴充; 設計§8.1)
@@ -49,44 +49,6 @@ function mk(seq, { platform = 'win32', installFail = false } = {}) {
 }
 
 let st0 = (o = {}) => ({ fn: 'launchChromium', autoInstall: true, installDeps: false, funLog: null, onTrace: null, ...o })
-
-
-//fakeSpawn, 安裝子行程之替身: 記錄參數, 依plan結束(code)、發error、或不結束(hang)
-function fakeSpawn(plans) {
-    let calls = []
-    let sp = (file, args, opt) => {
-        let cp = new EventEmitter()
-        cp.pid = 4321
-        cp.stdout = new EventEmitter()
-        cp.stderr = new EventEmitter()
-        cp.kill = (sig) => {
-            calls.push({ kill: sig })
-        }
-        calls.push({ file, args, opt })
-        if (file.toLowerCase().endsWith('taskkill.exe') || file === 'taskkill') {
-            //taskkill之結束延後(記錄其時點), 以驗證逾時之reject在其結束之後
-            setTimeout(() => {
-                calls.push({ taskkillClosed: true })
-                cp.emit('close', 0)
-            }, 30)
-            return cp
-        }
-        let plan = plans.shift() || { code: 0 }
-        setImmediate(() => {
-            if (plan.out) {
-                cp.stdout.emit('data', Buffer.from(plan.out))
-            }
-            if (plan.error) {
-                cp.emit('error', new Error('spawn ENOENT'))
-            }
-            else if (!plan.hang) {
-                cp.emit('close', plan.code)
-            }
-        })
-        return cp
-    }
-    return { sp, calls }
-}
 
 
 describe('unit-ensureChromium', function() {

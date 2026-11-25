@@ -50,10 +50,15 @@ describe('unit-pkg', function() {
         assert.strict.deepStrictEqual(pkg.scripts.test, 'mocha --parallel "test/*.test.mjs" --timeout 180000')
     })
 
-    it('主檔default匯出7個函數', function() {
-        assert.strict.deepStrictEqual(Object.keys(wpw), ['launchChromium', 'launchChromiumPersistent', 'getChromiumLaunchOptions', 'ensureChromium', 'findSystemChrome', 'getPlaywrightInfo', 'setBrowserTypeForTest'])
+    it('主檔default匯出8個函數與2個常數(毫秒之數字)', function() {
+        assert.strict.deepStrictEqual(Object.keys(wpw), ['launchChromium', 'launchChromiumPersistent', 'getChromiumLaunchOptions', 'ensureChromium', 'findSystemChrome', 'getPlaywrightInfo', 'setBrowserTypeForTest', 'onBrowserCreated', 'INSTALL_BUDGET_MS', 'LAUNCH_HOOK_TIMEOUT_MS'])
         for (let k of Object.keys(wpw)) {
-            assert.strict.deepStrictEqual(typeof wpw[k], 'function', k)
+            if (k === 'INSTALL_BUDGET_MS' || k === 'LAUNCH_HOOK_TIMEOUT_MS') {
+                assert.ok(Number.isSafeInteger(wpw[k]) && wpw[k] > 0, k)
+            }
+            else {
+                assert.strict.deepStrictEqual(typeof wpw[k], 'function', k)
+            }
         }
     })
 

@@ -11,7 +11,8 @@ import { pushOverride, removeOverride } from './_launchCore.mjs'
  * 替身之拋錯依真啟動之規則轉為固定詞彙錯誤(訊息含"Executable doesn't exist at"者視為受管瀏覽器缺檔)
  *
  * 同一行程內使用端之src與測試取同一個主檔模組, 替換對兩者同時有效(依賴樹有兩份本套件時只作用於呼叫者那一份, 使用端之接線測試須斷言替身確被呼叫);
- * 多次設定時以最後設定且未還原者生效; 還原函數只移除自己這一份(不論還原順序), 重複呼叫無作用; 替身之方法以原fake物件為this呼叫
+ * 多次設定時以最後設定且未還原者生效(替換, 非疊放: 只有堆疊頂之替身被呼叫, 其下者不被呼叫; 需要「各處皆生效、可疊放」之啟動後處理者改用onBrowserCreated, 它與本函數正交, 自設替身時仍生效);
+ * 還原函數只移除自己這一份(不論還原順序), 重複呼叫無作用; 替身之方法以原fake物件為this呼叫
  *
  * @param {Object} fake 輸入替身(一般物件, launch為函數, launchPersistentContext可省略但給了須為函數), 不符即同步throw code為E_ARG之Error(工廠類)
  * @returns {Function} 回傳還原函數

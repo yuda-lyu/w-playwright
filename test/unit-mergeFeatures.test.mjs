@@ -352,8 +352,8 @@ describe('unit-mergeFeatures', function() {
     it('§3.1第10步: ignoreAllDefaultArgs、自用鍵、__testHook*不轉傳, 其餘鍵原樣轉傳(V7、V8)', function() {
         let env = { A: '1' }
         let proxy = { server: 'http://127.0.0.1:1' }
-        let out = g({ ignoreAllDefaultArgs: true, autoInstall: true, installDeps: true, debug: false, funLog: () => {}, onTrace: () => {}, __testHookSeleniumRemoteURL: 'http://x', __testHookBeforeCreateBrowser: () => {}, timeout: 1234, env, proxy, slowMo: 5 })
-        for (let k of ['ignoreAllDefaultArgs', 'autoInstall', 'installDeps', 'debug', 'funLog', 'onTrace', '__testHookSeleniumRemoteURL', '__testHookBeforeCreateBrowser']) {
+        let out = g({ ignoreAllDefaultArgs: true, autoInstall: true, installDeps: true, installTimeout: 4321, debug: false, funLog: () => {}, onTrace: () => {}, __testHookSeleniumRemoteURL: 'http://x', __testHookBeforeCreateBrowser: () => {}, timeout: 1234, env, proxy, slowMo: 5 })
+        for (let k of ['ignoreAllDefaultArgs', 'autoInstall', 'installDeps', 'installTimeout', 'debug', 'funLog', 'onTrace', '__testHookSeleniumRemoteURL', '__testHookBeforeCreateBrowser']) {
             assert.strict.deepStrictEqual(Object.prototype.hasOwnProperty.call(out, k), false, k)
         }
         assert.strict.deepStrictEqual(out.timeout, 1234)

@@ -6,9 +6,10 @@ import { runLaunch } from './_launchCore.mjs'
  *
  * 順序: 快照opt → 環境檢查(PWDEBUG為inspector模式、SELENIUM_REMOTE_URL有值即E_ENV) → playwright-core實裝版本≠內附表即E_PW_VERSION →
  * 登入守門(環境變數W_PLAYWRIGHT_LOGON_GUARD開啟且種類非headless shell時) → 合併(getChromiumLaunchOptions之同一實作) → chromium.launch(或setBrowserTypeForTest之替身) →
- * 受管瀏覽器缺檔時: autoInstall為true則安裝一次再啟動一次, 否則E_BROWSER_MISSING
+ * 受管瀏覽器缺檔時: autoInstall為true則安裝一次再啟動一次(安裝有整體上限opt.installTimeout, 預設INSTALL_BUDGET_MS=15分鐘), 否則E_BROWSER_MISSING →
+ * 最終成功取得之瀏覽器依序套onBrowserCreated註冊之鉤子(每次啟動各一次; 與setBrowserTypeForTest之替換正交)
  *
- * 失敗一律reject固定詞彙之Error並帶code(E_ENV、E_PW_VERSION、E_LOGON_GUARD、E_BROWSER_MISSING、E_LAUNCH_TIMEOUT、E_LAUNCH、E_INSTALL);
+ * 失敗一律reject固定詞彙之Error並帶code(E_ENV、E_PW_VERSION、E_LOGON_GUARD、E_BROWSER_MISSING、E_LAUNCH_TIMEOUT、E_LAUNCH、E_INSTALL、E_LAUNCH_HOOK);
  * Playwright之原錯誤(含完整命令列)不附於對外錯誤, 只交opt.funLog('launch-error', { fn, code }, 原錯誤)
  *
  * @param {Object} [opt={}] 輸入設定物件(一般物件; 其他型別視為未給), 為chromium.launch之選項加上本套件自用鍵; 未宣告之鍵原樣轉傳由Playwright檢查(其拒絕經E_LAUNCH)
@@ -20,9 +21,10 @@ import { runLaunch } from './_launchCore.mjs'
  * @param {String|Boolean} [opt.lang] 輸入啟動語系(語系字串如'en-US'、'zh-TW'; 或false表不補--lang), 未給或無效時用主機系統語系(Chromium 159起不再繼承主機語系, 本套件補--lang以恢復; 取不到則不補); args已含--lang者以args為準; 規則見getChromiumLaunchOptions
  * @param {Boolean} [opt.autoInstall=false] 輸入受管瀏覽器缺檔時是否自動安裝一次(布林), 無效時用預設false
  * @param {Boolean} [opt.installDeps=false] 輸入Linux缺系統相依時是否安裝相依一次(布林; 可能需sudo), 無效時用預設false
+ * @param {Number|String} [opt.installTimeout=900000] 輸入autoInstall之整體安裝上限毫秒(有效數字, 0~2147483647, 數字字串轉值後使用; 0表不限, 須明確給0才不限; 受管瀏覽器與系統相依兩次安裝共用), 逾時即結束安裝子行程樹並reject E_INSTALL, 無效時用預設(INSTALL_BUDGET_MS, 15分鐘); 多行程並行時後到者等Playwright安裝目錄鎖之時間亦在此上限內
  * @param {Boolean} [opt.debug=false] 輸入是否提示非預期之輸入(布林)
- * @param {Function} [opt.funLog] 輸入診斷出口函數(label, safe, detail): 'warn'(提示)、'launch-error'(原錯誤)、'install-output'、'install-error'
- * @param {Function} [opt.onTrace] 輸入觀察回調(同步呼叫, 拋錯與rejection皆忽略), 事件{ type }: 'launch-options'、'env-reject'、'version-reject'、'logon-reject'、'install-start'、'install-done'、'install-fail'
+ * @param {Function} [opt.funLog] 輸入診斷出口函數(label, safe, detail): 'warn'(提示)、'launch-error'(原錯誤)、'hook-error'(onBrowserCreated之鉤子之原錯誤)、'install-output'、'install-error'
+ * @param {Function} [opt.onTrace] 輸入觀察回調(同步呼叫, 拋錯與rejection皆忽略), 事件{ type }: 'launch-options'、'env-reject'、'version-reject'、'logon-reject'、'install-start'、'install-done'、'install-fail'、'browser-hook'、'browser-hook-failed'
  * @returns {Promise} 回傳Promise, resolve回傳Playwright之Browser, reject回傳帶code之Error
  * @example
  *

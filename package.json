@@ -1,6 +1,6 @@
 {
   "name": "w-playwright",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "dist/w-playwright.umd.js",
   "dependencies": {
     "playwright-core": "1.65.1"
